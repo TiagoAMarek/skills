@@ -42,9 +42,9 @@ Skim the actual hunks. Identify:
 
 ### 3. Author the recap
 1. Copy `reference/template.html` verbatim to `recaps/<YYYY-MM-DD>-<slug>.html` in the current project (create `recaps/` if missing; `<slug>` = short kebab summary; date = today).
-2. Slot-fill only the marked regions: `<title>`, header meta chips, the `.tldr` banner, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the `<head>`, the vendored `<script>/<link>` paths, or the trailing `<script>` block.
-3. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `mermaid` diagram, `file-tree` (change badges), `diff` (`language-diff`, collapsible), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
-4. Diffs go in `<code class="language-diff">` so highlight.js colors +/−/hunks. New-file walkthroughs go in `<code class="language-<lang>">` for real per-language highlighting.
+2. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the `<head>`, the vendored `<script>/<link>` paths, or the trailing `<script>` block.
+3. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `mermaid` diagram, `file-tree` (change badges), `diff` (`pre.vr-diff`, collapsible), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
+4. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<pre class="vr-diff" data-lang="<lang>">`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, and word-level emphasis of the changed tokens. Keep the `@@ … @@` header — the line numbers come from it. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
 
 ### 3a. The TL;DR banner
 A 3-second scannable verdict at the very top, for "trust or dig in?". It is NOT a shorter Overview — it is a different shape. Fill it so:
@@ -65,6 +65,12 @@ Write plain and direct. State what changed and what to check. No warm-up, no sig
 - Be specific. Name the file or symbol, not "the relevant module".
 
 Keep the structure. Bullets stay bullets; do not melt the TL;DR or Check list into a paragraph. Short fragments are fine in the verdict.
+
+**Chunk for fast intake (the reader has ADHD).** Write for a 10-second entry layer, detail on demand:
+- The **Overview** is a `<ul class="overview prose">` of **max ~3 bullets, one idea each**, with the single key term wrapped in `<b>` as an eye-anchor. No paragraphs.
+- **Tab intros** are **one short sentence** (`<p class="prose">`), not a paragraph.
+- Put `class="prose"` on prose you author (overview, verdict what, checks, tab intros) — it gets the readable measure and the bionic-reading toggle. Never put it on code or labels.
+- **Diffs collapse by DEFAULT** (no `open` on `details.fold`) and every diff summary carries a plain-language `<span class="sum">— what changed</span>` so it can be judged without expanding. Leave a diff open only if the verdict tells the reader to look there first.
 
 Before: "This pivotal change establishes a robust foundation, serving as the entry point for a more streamlined auth flow."
 After: "Replaces password login with token sessions. Old path deleted."

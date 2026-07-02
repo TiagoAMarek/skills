@@ -13,45 +13,56 @@
 <link rel="stylesheet" href="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/highlight-theme.css">
 <style>
   :root{
-    --bg:#0d1117; --panel:#161b22; --panel2:#0d1117; --border:#30363d;
-    --fg:#e6edf3; --muted:#8b949e; --accent:#58a6ff;
-    --add:#2ea04326; --add-b:#3fb950; --del:#f8514926; --del-b:#f85149;
-    --chip:#21262d; --mod:#d29922; --new:#3fb950; --rm:#f85149; --ren:#a371f7;
+    /* warm graphite "carbon paper" — the only color on the page is meaning */
+    --bg:#14130f; --panel:#1c1a15; --panel2:#100f0c; --border:#33302a; --rule:#4a4636;
+    --fg:#ece7db; --muted:#9a917f;
+    /* semantic hues, warmed to sit on warm paper — reserved for diff/status meaning only */
+    --add:#4fae5a24; --add-b:#5fbf6a; --del:#e5484d24; --del-b:#e5726f;
+    --chip:#232019; --mod:#d99a2b; --new:#5fbf6a; --rm:#e5726f; --ren:#b98cf0;
+    /* type: mono = the machine's voice, sans = your judgment */
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);
-    font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
-  a{color:var(--accent)}
+  body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 var(--sans)}
+  a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px}
+  a:hover{text-decoration-color:var(--fg)}
   .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
-  header.rc h1{font-size:22px;margin:0 0 8px}
-  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
-  .chip{background:var(--chip);border:1px solid var(--border);border-radius:999px;
-    padding:2px 10px;font-size:12px;color:var(--muted)}
-  .chip.plus{color:var(--add-b)} .chip.minus{color:var(--del-b)}
-  /* tl;dr verdict banner */
-  .tldr{border:1px solid var(--border);border-left:3px solid var(--accent);background:#58a6ff10;
-    border-radius:10px;padding:14px 18px;margin:16px 0}
-  .tldr h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
-  .tldr .what{font-size:15px;font-weight:600;margin:0 0 10px}
-  .tldr ul{margin:0;padding-left:18px} .tldr li{margin:3px 0}
-  .tldr li b{color:var(--accent);font-weight:600}
-  .tldr .facts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-  .fact{background:var(--chip);border:1px solid var(--border);border-radius:6px;padding:2px 9px;
-    font-size:12px;color:var(--muted)}
+  /* header = case file: mono eyebrow, mono title, mono ledger case-line */
+  header.rc{margin-bottom:20px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 9px}
+  header.rc h1{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.01em;margin:0 0 9px}
+  .caseline{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  .caseline .a{color:var(--add-b)} .caseline .d{color:var(--del-b)}
+  /* signature: the verdict stamp — top rule + label, sans body, ledger facts */
+  .tldr{background:var(--panel);border:1px solid var(--border);border-top:2px solid var(--fg);
+    border-radius:0 0 8px 8px;padding:16px 18px;margin:18px 0}
+  .tldr .vlabel{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.22em;
+    color:var(--muted);margin:0 0 11px}
+  .tldr .what{font-family:var(--sans);font-size:15.5px;font-weight:600;line-height:1.4;margin:0 0 11px}
+  .tldr ul{list-style:none;margin:0;padding:0}
+  .tldr li{font-family:var(--sans);margin:4px 0;padding-left:16px;position:relative;color:var(--fg)}
+  .tldr li::before{content:"·";position:absolute;left:3px;color:var(--muted);font-weight:700}
+  .tldr .facts{display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-end;margin-top:15px;
+    padding-top:11px;border-top:1px solid var(--border);font-family:var(--mono);font-size:12px}
+  .fact{color:var(--muted)}
   .fact.plus{color:var(--add-b)} .fact.minus{color:var(--del-b)}
   .fact.ok{color:var(--new)} .fact.warn{color:var(--mod)} .fact.none{color:var(--rm)}
   .fact.risk-low{color:var(--new)} .fact.risk-med{color:var(--mod)} .fact.risk-high{color:var(--rm)}
   section.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;
     padding:16px 18px;margin:16px 0}
-  h2.sec{font-size:16px;margin:0 0 10px}
-  h3.blk{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 8px}
+  h2.sec{font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.16em;
+    color:var(--muted);font-weight:600;margin:0 0 12px}
+  h3.blk{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:18px 0 8px}
   p{margin:8px 0}
   /* tabs */
   nav.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 0;border-bottom:1px solid var(--border)}
-  nav.tabs button{background:transparent;border:0;color:var(--muted);padding:9px 14px;font-size:13px;
+  nav.tabs button{background:transparent;border:0;color:var(--muted);padding:9px 14px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.03em;
     cursor:pointer;border-bottom:2px solid transparent}
   nav.tabs button:hover{color:var(--fg)}
-  nav.tabs button.active{color:var(--fg);border-bottom-color:var(--accent)}
+  nav.tabs button.active{color:var(--fg);border-bottom-color:var(--fg)}
   .tab-panel{display:none} .tab-panel.active{display:block}
   /* collapsible */
   details.fold{border:1px solid var(--border);border-radius:8px;margin:10px 0;overflow:hidden}
@@ -66,51 +77,87 @@
   pre{margin:0;overflow-x:auto} pre code{font-size:12.5px;line-height:1.5}
   .diff-stat{color:var(--muted);font-weight:400}
   .diff-stat .a{color:var(--add-b)} .diff-stat .d{color:var(--del-b)}
+  /* rendered diff (line numbers + syntax + word-level) — built at runtime from pre.vr-diff */
+  .vr-diff-wrap{overflow-x:auto}
+  table.vr-diff{border-collapse:collapse;width:100%;
+    font-family:var(--mono);font-size:12.5px;line-height:1.5}
+  table.vr-diff td{padding:0 10px;vertical-align:top;white-space:pre}
+  table.vr-diff td.ln{text-align:right;color:var(--muted);user-select:none;width:1%;white-space:nowrap;
+    border-right:1px solid var(--border);padding:0 8px;opacity:.65}
+  table.vr-diff td.code{width:100%}
+  table.vr-diff tr.add td{background:var(--add)} table.vr-diff tr.add td.ln{background:#4fae5a14}
+  table.vr-diff tr.del td{background:var(--del)} table.vr-diff tr.del td.ln{background:#e5484d14}
+  table.vr-diff tr.hunk td{color:var(--muted);background:var(--panel2)}
+  table.vr-diff tr.meta td{color:var(--muted);opacity:.7}
+  .wd{border-radius:0;padding:0}  /* flush: adjacent .wd spans read as one continuous band */
+  table.vr-diff tr.add .wd{background:#5fbf6a55} table.vr-diff tr.del .wd{background:#e5726f55}
   /* data-model */
   table.dm{border-collapse:collapse;width:100%;font-size:13px}
   table.dm th,table.dm td{border:1px solid var(--border);padding:6px 10px;text-align:left}
   table.dm th{background:var(--panel2);color:var(--muted);font-weight:600}
-  .badge{display:inline-block;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:600}
-  .badge.added{background:#2ea04326;color:var(--new)}
-  .badge.modified{background:#d2992226;color:var(--mod)}
-  .badge.removed{background:#f8514926;color:var(--rm)}
-  .badge.renamed{background:#a371f726;color:var(--ren)}
+  .badge{display:inline-block;border-radius:4px;padding:1px 7px;font-family:var(--mono);
+    font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+  .badge.added{background:#4fae5a22;color:var(--new)}
+  .badge.modified{background:#d99a2b22;color:var(--mod)}
+  .badge.removed{background:#e5484d22;color:var(--rm)}
+  .badge.renamed{background:#b98cf022;color:var(--ren)}
   /* api-endpoint */
   .ep{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:10px 0}
   .ep .row{display:flex;gap:10px;align-items:center;padding:9px 12px;background:var(--panel2);
-    font-family:ui-monospace,monospace;font-size:13px}
-  .method{font-weight:700;padding:1px 8px;border-radius:5px;font-size:11px}
-  .method.GET{background:#1f6feb33;color:#58a6ff} .method.POST{background:#2ea04333;color:#3fb950}
-  .method.PUT{background:#d2992233;color:#d29922} .method.PATCH{background:#a371f733;color:#a371f7}
-  .method.DELETE{background:#f8514933;color:#f85149}
+    font-family:var(--mono);font-size:13px}
+  .method{font-family:var(--mono);font-weight:700;padding:1px 8px;border-radius:4px;font-size:11px}
+  .method.GET{background:#5bb0a633;color:#6cc0b6} .method.POST{background:#4fae5a33;color:var(--new)}
+  .method.PUT{background:#d99a2b33;color:var(--mod)} .method.PATCH{background:#b98cf033;color:var(--ren)}
+  .method.DELETE{background:#e5484d33;color:var(--rm)}
   .ep .io{padding:10px 12px;border-top:1px solid var(--border)}
-  .ep .io h4{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .ep .io h4{margin:0 0 6px;font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em}
   /* file-tree */
-  ul.tree{list-style:none;margin:0;padding:0 0 0 4px;font-family:ui-monospace,monospace;font-size:13px}
+  ul.tree{list-style:none;margin:0;padding:0 0 0 4px;font-family:var(--mono);font-size:13px}
   ul.tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px solid var(--border)}
   ul.tree li{padding:2px 0}
   .tree .dir{color:var(--muted)} .tree .f{color:var(--fg)}
   .tree .badge{margin-left:8px}
   /* annotated code note */
-  .note{border-left:2px solid var(--accent);background:#58a6ff14;padding:6px 10px;margin:8px 0;
+  .note{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:8px 0;
     font-size:12.5px;color:var(--fg)}
   .mermaid{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;
     text-align:center;margin:10px 0}
-  code.inline{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:12.5px}
+  code.inline{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:var(--mono)}
+  /* warm the vendored github-dark tokens so syntax harmonizes with the paper */
+  .hljs-keyword,.hljs-built_in,.hljs-literal{color:#d98c5f}
+  .hljs-string,.hljs-regexp,.hljs-addition{color:#a3b06a}
+  .hljs-title,.hljs-title.function_,.hljs-section,.hljs-name{color:#e0c06a}
+  .hljs-number{color:#c98a7a} .hljs-attr,.hljs-variable,.hljs-property{color:#cbb98a}
+  .hljs-comment,.hljs-quote{color:var(--muted);font-style:italic} .hljs-type{color:#7fb5ac}
+  /* --- readability (ADHD): short measure on prose only, never on code --- */
+  p{max-width:64ch}
+  .tldr .what,.tldr li,ul.overview li,.note,.tab-panel>.card>p.prose{max-width:64ch}
+  ul.overview{list-style:none;margin:0 0 4px;padding:0}
+  ul.overview li{position:relative;padding-left:16px;margin:6px 0;line-height:1.5}
+  ul.overview li::before{content:"\2192";position:absolute;left:0;color:var(--muted)}
+  ul.overview li b,.tldr li b{color:var(--fg);font-weight:600}
+  /* bionic-reading: prefixes pre-wrapped in .bx, bolded only when body.bionic */
+  .bx{font-weight:inherit;color:inherit}
+  body.bionic .bx{font-weight:700;color:var(--fg)}
+  /* header controls (bionic toggle) */
+  .controls{float:right;display:flex;gap:8px}
+  .controls button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:5px;
+    padding:3px 10px;cursor:pointer}
+  .controls button:hover{color:var(--fg);border-color:var(--rule)}
+  .controls button.on{color:var(--fg);border-color:var(--fg)}
+  .fold .sum{color:var(--muted);font-weight:400}
 </style>
 
 <div class="wrap">
 
-<!-- ============ HEADER ============ -->
+<!-- ============ HEADER = case file (mono eyebrow / title / ledger case-line) ============ -->
 <header class="rc">
+  <div class="controls"><button id="bionicBtn" type="button">bionic</button></div>
+  <div class="eyebrow">Session recap</div>
   <h1>RECAP_TITLE</h1>
-  <div class="meta">
-    <span class="chip">base: main…HEAD</span>
-    <span class="chip">2026-07-02</span>
-    <span class="chip">N files</span>
-    <span class="chip plus">+ADDED</span>
-    <span class="chip minus">−REMOVED</span>
-  </div>
+  <div class="caseline">main…HEAD · 2026-07-02 · N files ·
+    <span class="a">+ADDED</span> <span class="d">−REMOVED</span></div>
 </header>
 
 <!-- ============ TL;DR (scannable verdict — read in 3s, decide trust-or-dig) ============
@@ -119,11 +166,11 @@
      Tests classes: ok "✅ present" | warn "⚠️ partial" | none "❌ none".
      Risk classes: risk-low | risk-med | risk-high.  Delete this comment when filling. -->
 <section class="tldr">
-  <h2>TL;DR</h2>
-  <p class="what">One line: what this change set does, in plain terms.</p>
-  <ul>
-    <li><b>Check:</b> constant-time compare in <code class="inline">verify.ts</code> (Auth flow tab)</li>
-    <li><b>Check:</b> <code class="inline">legacyKey</code> removal needs a migration</li>
+  <div class="vlabel">Verdict</div>
+  <p class="what prose">One line: what this change set does, in plain terms.</p>
+  <ul class="prose">
+    <li>check constant-time compare in <code class="inline">verify.ts</code> (Auth flow tab)</li>
+    <li>check <code class="inline">legacyKey</code> removal needs a migration</li>
   </ul>
   <div class="facts">
     <span class="fact">N files</span>
@@ -137,9 +184,13 @@
 <!-- ============ OVERVIEW (rich-text; 1–3 paragraphs of objective/decisions/risks) ============ -->
 <section class="card">
   <h2 class="sec">Overview</h2>
-  <!-- Voice: plain and direct. See SKILL.md "Prose voice". No inflation, no hedging, no em-dashes. -->
-  <p>One to three short paragraphs: what this change is for, the key decisions, and the risks to check.
-     Prose is the ONLY place inferences are allowed.</p>
+  <!-- Voice: short bullets, ONE idea each, key term bolded as an eye-anchor. No paragraphs.
+       See SKILL.md "Prose voice". Prose is the ONLY place inferences are allowed. -->
+  <ul class="overview prose">
+    <li><b>Auth</b>: password login replaced with token sessions.</li>
+    <li><b>legacyKey</b> removed. Needs a migration.</li>
+    <li><b>verify.ts</b>: constant-time compare, so timing can't leak.</li>
+  </ul>
 
   <!-- optional shape-of-the-change diagram -->
   <h3 class="blk">Change map</h3>
@@ -176,14 +227,18 @@ graph LR
   <!-- ---- TAB 1 ---- -->
   <section class="tab-panel active" id="t1">
     <section class="card">
-      <p>Short prose framing this key change and why it matters for review.</p>
+      <p class="prose">One sentence framing this change. Why it matters for review.</p>
 
-      <!-- DIFF block: language-diff lets highlight.js color +/-/hunks. Collapsible. -->
+      <!-- DIFF block: paste the RAW unified git hunk into pre.vr-diff, set data-lang from the file ext.
+           The runtime renderer adds line numbers, per-line syntax colors, and word-level emphasis.
+           Do NOT hand-author highlighting. Collapse by DEFAULT (no `open`) and put a plain-language
+           `.sum` phrase in the summary so it can be read without expanding. -->
       <h3 class="blk">Diff — src/auth.ts</h3>
-      <details class="fold" open>
-        <summary>src/auth.ts <span class="diff-stat"><span class="a">+42</span> <span class="d">−7</span></span></summary>
+      <details class="fold">
+        <summary>src/auth.ts <span class="sum">— login becomes async, verifies hash</span>
+          <span class="diff-stat"><span class="a">+42</span> <span class="d">−7</span></span></summary>
         <div class="body">
-<pre><code class="language-diff">@@ -1,7 +1,12 @@
+<pre class="vr-diff" data-lang="typescript">@@ -1,7 +1,12 @@
 -export function login(u, p) {
 -  return db.check(u, p)
 +export async function login(u, p) {
@@ -191,7 +246,7 @@ graph LR
 +  if (!user) throw new AuthError('no user')
 +  return verify(p, user.hash)
  }
-</code></pre>
+</pre>
         </div>
       </details>
 
@@ -208,7 +263,7 @@ graph LR
   <!-- ---- TAB 2 ---- -->
   <section class="tab-panel" id="t2">
     <section class="card">
-      <p>What changed in the data shape.</p>
+      <p class="prose">What changed in the data shape.</p>
       <h3 class="blk">Data model — Session</h3>
       <table class="dm">
         <tr><th>Field</th><th>Type</th><th>Change</th></tr>
@@ -242,7 +297,121 @@ graph LR
 <script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/highlight.min.js"></script>
 <script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/mermaid.min.js"></script>
 <script>
-  // syntax highlighting
+  // ---- rich diff renderer: pre.vr-diff -> table with line numbers, syntax colors, word-level emphasis ----
+  (function(){
+    function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function toks(s){return s.match(/\s+|[A-Za-z0-9_$]+|[^\sA-Za-z0-9_$]/g)||[];}
+    // LCS over token arrays -> which tokens are unchanged on each side
+    function lcs(a,b){
+      var n=a.length,m=b.length,dp=[],i,j;
+      for(i=0;i<=n;i++){dp[i]=[];for(j=0;j<=m;j++)dp[i][j]=0;}
+      for(i=n-1;i>=0;i--)for(j=m-1;j>=0;j--)
+        dp[i][j]= a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+      var aS=new Array(n).fill(false),bS=new Array(m).fill(false); i=0;j=0;
+      while(i<n&&j<m){
+        if(a[i]===b[j]){aS[i]=true;bS[j]=true;i++;j++;}
+        else if(dp[i+1][j]>=dp[i][j+1])i++; else j++;
+      }
+      return {aS:aS,bS:bS};
+    }
+    // char ranges of changed tokens, merged into continuous runs: interior whitespace between
+    // two changed tokens is included; the run's outer whitespace is trimmed; whitespace-only
+    // changes (indentation etc.) never open a run, so they stay unemphasized.
+    function ranges(tokens,same){
+      var off=[],pos=0,k; for(k=0;k<tokens.length;k++){off[k]=pos;pos+=tokens[k].length;}
+      var r=[],start=-1,end=-1;
+      for(k=0;k<tokens.length;k++){
+        if(/^\s+$/.test(tokens[k])) continue;         // whitespace: never opens/closes a run
+        if(!same[k]){ if(start<0)start=off[k]; end=off[k]+tokens[k].length; } // changed: extend
+        else if(start>=0){ r.push([start,end]); start=-1; end=-1; }           // unchanged: close
+      }
+      if(start>=0) r.push([start,end]);
+      return r;
+    }
+    // flatten hljs html into [{text,cls}] segments (innermost class wins)
+    function flatten(html){
+      var tmp=document.createElement('div');tmp.innerHTML=html;var segs=[];
+      (function walk(node,cls){Array.prototype.forEach.call(node.childNodes,function(n){
+        if(n.nodeType===3)segs.push({text:n.nodeValue,cls:cls});
+        else if(n.nodeType===1)walk(n,(n.className||cls));});})(tmp,'');
+      return segs;
+    }
+    function inRange(p,rs){for(var k=0;k<rs.length;k++)if(p>=rs[k][0]&&p<rs[k][1])return true;return false;}
+    // highlight one code line with hljs and overlay word-level emphasis at char ranges
+    function codeHtml(code,lang,rs){
+      var hl;
+      try{hl=hljs.highlight(code,{language:lang,ignoreIllegals:true}).value;}
+      catch(e){hl=esc(code);}
+      var segs=flatten(hl),out='',pos=0;
+      segs.forEach(function(seg){
+        var t=seg.text,i=0;
+        while(i<t.length){
+          var e=inRange(pos,rs),j=i;
+          while(j<t.length && inRange(pos+(j-i),rs)===e)j++;
+          var piece=esc(t.slice(i,j));
+          if(seg.cls)piece='<span class="'+seg.cls+'">'+piece+'</span>';
+          if(e)piece='<span class="wd">'+piece+'</span>';
+          out+=piece;pos+=(j-i);i=j;
+        }
+        if(t.length===0){/* empty text node */}
+      });
+      return out;
+    }
+    function render(pre){
+      var lang=pre.getAttribute('data-lang')||'plaintext';
+      if(!hljs.getLanguage(lang))lang='plaintext';
+      var raw=pre.textContent.replace(/\n$/,''),lines=raw.split('\n');
+      var rows=[],oldNo=0,newNo=0,inHunk=false,k;
+      for(k=0;k<lines.length;k++){
+        var line=lines[k],hm;
+        if((hm=/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line))){
+          oldNo=+hm[1];newNo=+hm[2];inHunk=true;rows.push({t:'hunk',text:line});continue;
+        }
+        if(!inHunk){rows.push({t:'meta',text:line});continue;}
+        var c=line.charAt(0);
+        if(c===' ')rows.push({t:'ctx',text:line.slice(1),o:oldNo++,n:newNo++});
+        else if(c==='+')rows.push({t:'add',text:line.slice(1),n:newNo++});
+        else if(c==='-')rows.push({t:'del',text:line.slice(1),o:oldNo++});
+        else if(c==='\\')rows.push({t:'meta',text:line});
+        else if(line==='')continue;
+        else rows.push({t:'meta',text:line});
+      }
+      // pair consecutive del-run then add-run -> word-level ranges
+      for(k=0;k<rows.length;k++){
+        if(rows[k].t==='del'){
+          var d=k;while(d<rows.length&&rows[d].t==='del')d++;
+          var a=d;while(a<rows.length&&rows[a].t==='add')a++;
+          var dels=rows.slice(k,d),adds=rows.slice(d,a),p;
+          for(p=0;p<Math.min(dels.length,adds.length);p++){
+            var ot=toks(dels[p].text),nt=toks(adds[p].text),f=lcs(ot,nt);
+            dels[p].r=ranges(ot,f.aS);adds[p].r=ranges(nt,f.bS);
+          }
+          k=a-1;
+        }
+      }
+      var html='<div class="vr-diff-wrap"><table class="vr-diff"><tbody>';
+      rows.forEach(function(r){
+        if(r.t==='hunk'||r.t==='meta'){
+          html+='<tr class="'+r.t+'"><td class="ln"></td><td class="ln"></td><td class="code">'+esc(r.text)+'</td></tr>';
+        }else{
+          var body=codeHtml(r.text,lang,r.r||[]);
+          html+='<tr class="'+r.t+'"><td class="ln">'+(r.o||'')+'</td><td class="ln">'+(r.n||'')+
+                 '</td><td class="code">'+body+'</td></tr>';
+        }
+      });
+      html+='</tbody></table></div>';
+      var wrap=document.createElement('div');wrap.innerHTML=html;
+      pre.replaceWith(wrap.firstChild);
+    }
+    document.querySelectorAll('pre.vr-diff').forEach(function(pre){
+      try{render(pre);}
+      catch(e){ // graceful fallback to plain diff coloring
+        var c=document.createElement('code');c.className='language-diff';c.textContent=pre.textContent;
+        pre.textContent='';pre.appendChild(c);pre.classList.remove('vr-diff');
+      }
+    });
+  })();
+  // syntax highlighting (annotated-code blocks; rendered diffs already colored above)
   try { hljs.highlightAll(); } catch(e){}
   // diagrams
   try { mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' }); } catch(e){}
@@ -256,4 +425,32 @@ graph LR
       if (el) el.classList.add('active');
     });
   });
+  // bionic reading: pre-wrap word prefixes in .prose, toggle via body.bionic (off by default)
+  (function(){
+    function bionicify(root){
+      var walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+        if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+        if(n.parentNode.closest('code,.bx,.fact'))return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }});
+      var nodes=[],n; while(n=walk.nextNode())nodes.push(n);
+      nodes.forEach(function(tn){
+        var frag=document.createDocumentFragment();
+        tn.nodeValue.split(/(\s+)/).forEach(function(w){
+          if(w===''||/^\s+$/.test(w)){frag.appendChild(document.createTextNode(w));return;}
+          var k=Math.max(1,Math.ceil(w.length*0.4));
+          var b=document.createElement('b');b.className='bx';b.textContent=w.slice(0,k);
+          frag.appendChild(b);frag.appendChild(document.createTextNode(w.slice(k)));
+        });
+        tn.parentNode.replaceChild(frag,tn);
+      });
+    }
+    document.querySelectorAll('.prose').forEach(bionicify);
+    var bt=document.getElementById('bionicBtn');
+    if(bt)bt.addEventListener('click',function(){
+      var on=document.body.classList.toggle('bionic');
+      bt.classList.toggle('on',on);
+      bt.textContent=on?'bionic ✓':'bionic';
+    });
+  })();
 </script>
