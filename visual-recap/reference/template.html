@@ -28,6 +28,19 @@
   .chip{background:var(--chip);border:1px solid var(--border);border-radius:999px;
     padding:2px 10px;font-size:12px;color:var(--muted)}
   .chip.plus{color:var(--add-b)} .chip.minus{color:var(--del-b)}
+  /* tl;dr verdict banner */
+  .tldr{border:1px solid var(--border);border-left:3px solid var(--accent);background:#58a6ff10;
+    border-radius:10px;padding:14px 18px;margin:16px 0}
+  .tldr h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
+  .tldr .what{font-size:15px;font-weight:600;margin:0 0 10px}
+  .tldr ul{margin:0;padding-left:18px} .tldr li{margin:3px 0}
+  .tldr li b{color:var(--accent);font-weight:600}
+  .tldr .facts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .fact{background:var(--chip);border:1px solid var(--border);border-radius:6px;padding:2px 9px;
+    font-size:12px;color:var(--muted)}
+  .fact.plus{color:var(--add-b)} .fact.minus{color:var(--del-b)}
+  .fact.ok{color:var(--new)} .fact.warn{color:var(--mod)} .fact.none{color:var(--rm)}
+  .fact.risk-low{color:var(--new)} .fact.risk-med{color:var(--mod)} .fact.risk-high{color:var(--rm)}
   section.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;
     padding:16px 18px;margin:16px 0}
   h2.sec{font-size:16px;margin:0 0 10px}
@@ -100,11 +113,33 @@
   </div>
 </header>
 
+<!-- ============ TL;DR (scannable verdict — read in 3s, decide trust-or-dig) ============
+     What  = mechanical (scope of the diff).   Tests = mechanical (did the diff touch test files?).
+     Check = JUDGMENT: 2–3 things to look at first, each pointing at a file/tab.   Risk = JUDGMENT cue.
+     Tests classes: ok "✅ present" | warn "⚠️ partial" | none "❌ none".
+     Risk classes: risk-low | risk-med | risk-high.  Delete this comment when filling. -->
+<section class="tldr">
+  <h2>TL;DR</h2>
+  <p class="what">One line: what this change set does, in plain terms.</p>
+  <ul>
+    <li><b>Check:</b> constant-time compare in <code class="inline">verify.ts</code> (Auth flow tab)</li>
+    <li><b>Check:</b> <code class="inline">legacyKey</code> removal needs a migration</li>
+  </ul>
+  <div class="facts">
+    <span class="fact">N files</span>
+    <span class="fact plus">+ADDED</span>
+    <span class="fact minus">−REMOVED</span>
+    <span class="fact ok">Tests ✅ present</span>
+    <span class="fact risk-med">Risk: medium</span>
+  </div>
+</section>
+
 <!-- ============ OVERVIEW (rich-text; 1–3 paragraphs of objective/decisions/risks) ============ -->
 <section class="card">
   <h2 class="sec">Overview</h2>
-  <p>One to three short paragraphs: what this change set is for, the key decisions, and the risks
-     a reviewer should hold in mind. Prose is the ONLY place inferences are allowed.</p>
+  <!-- Voice: plain and direct. See SKILL.md "Prose voice". No inflation, no hedging, no em-dashes. -->
+  <p>One to three short paragraphs: what this change is for, the key decisions, and the risks to check.
+     Prose is the ONLY place inferences are allowed.</p>
 
   <!-- optional shape-of-the-change diagram -->
   <h3 class="blk">Change map</h3>
