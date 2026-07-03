@@ -220,6 +220,47 @@
       el.classList.remove('wf-roughed', 'wf-roughed-b', 'wf-roughed-mark', 'wf-roughed-fill');
       delete el.dataset.roughDone;
     }
+    // consecutive same-polarity .wf-row marks → one ring on the leader row (unmarked sibling breaks chain)
+    var rowMarkMerge = { skipMark: new WeakSet(), groupFor: new WeakMap() };
+    function rowMarkPolarity(row){
+      if (row.classList.contains('wf-added')) return 'added';
+      if (row.classList.contains('wf-removed')) return 'removed';
+      return null;
+    }
+    function refreshRowMarkMerge(){
+      rowMarkMerge.skipMark = new WeakSet();
+      rowMarkMerge.groupFor = new WeakMap();
+      var parents = new Set();
+      document.querySelectorAll('.wf-row.wf-added, .wf-row.wf-removed').forEach(function(row){
+        if (row.parentElement) parents.add(row.parentElement);
+      });
+      parents.forEach(function(parent){
+        var current = null;
+        Array.from(parent.children).forEach(function(child){
+          if (!child.classList.contains('wf-row')){ current = null; return; }
+          var p = rowMarkPolarity(child);
+          if (!p){ current = null; return; }
+          if (current && current.polarity === p) current.rows.push(child);
+          else { current = { polarity: p, rows: [child] }; }
+          if (current.rows.length > 1){
+            rowMarkMerge.groupFor.set(current.rows[0], current.rows.slice());
+            for (var i = 1; i < current.rows.length; i++) rowMarkMerge.skipMark.add(current.rows[i]);
+          }
+        });
+      });
+    }
+    function unionMarkBounds(leader, rows){
+      var lr = leader.getBoundingClientRect();
+      var minX = 0, minY = 0, maxX = leader.offsetWidth, maxY = leader.offsetHeight;
+      rows.forEach(function(row){
+        var rr = row.getBoundingClientRect();
+        minX = Math.min(minX, rr.left - lr.left);
+        minY = Math.min(minY, rr.top - lr.top);
+        maxX = Math.max(maxX, rr.right - lr.left);
+        maxY = Math.max(maxY, rr.bottom - lr.top);
+      });
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
     function sketch(el){
       if (el.dataset.roughDone) return;
       if (/^(INPUT|TEXTAREA|SELECT|HR|IMG|BR)$/.test(el.tagName)) return; // void/replaced: can't hold the overlay, keep crisp CSS
@@ -227,18 +268,29 @@
       if (!w || !h) return; // hidden tab panel — picked up on tab activation instead
       var cs = getComputedStyle(el);
       var cl = el.classList;
-      var markPad = (cl.contains('wf-added') || cl.contains('wf-removed')) ? 8 : 0;
+      var isRowMark = cl.contains('wf-row') && (cl.contains('wf-added') || cl.contains('wf-removed'));
+      var skipRowMark = isRowMark && rowMarkMerge.skipMark.has(el);
+      var mergeRows = isRowMark && !skipRowMark ? rowMarkMerge.groupFor.get(el) : null;
+      var markUnion = mergeRows && mergeRows.length > 1 ? unionMarkBounds(el, mergeRows) : null;
+      var markPad = (isRowMark && !skipRowMark) || (cl.contains('wf-added') || cl.contains('wf-removed')) ? 8 : 0;
+      if (skipRowMark) markPad = 0;
+      var svgMinX = markUnion ? Math.min(0, markUnion.x) : 0;
+      var svgMinY = markUnion ? Math.min(0, markUnion.y) : 0;
+      var svgMaxX = markUnion ? Math.max(w, markUnion.x + markUnion.w) : w;
+      var svgMaxY = markUnion ? Math.max(h, markUnion.y + markUnion.h) : h;
+      var vbX = svgMinX - markPad, vbY = svgMinY - markPad;
+      var vbW = (svgMaxX - svgMinX) + 2 * markPad, vbH = (svgMaxY - svgMinY) + 2 * markPad;
       var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'wf-rough-layer');
-      svg.setAttribute('width', w + 2 * markPad); svg.setAttribute('height', h + 2 * markPad);
-      svg.setAttribute('viewBox', (-markPad) + ' ' + (-markPad) + ' ' + (w + 2 * markPad) + ' ' + (h + 2 * markPad));
-      if (markPad){
-        svg.style.top = (-markPad) + 'px';
-        svg.style.left = (-markPad) + 'px';
+      svg.setAttribute('width', vbW); svg.setAttribute('height', vbH);
+      svg.setAttribute('viewBox', vbX + ' ' + vbY + ' ' + vbW + ' ' + vbH);
+      if (markPad || markUnion){
+        svg.style.top = vbY + 'px';
+        svg.style.left = vbX + 'px';
         svg.style.right = 'auto';
         svg.style.bottom = 'auto';
-        svg.style.width = (w + 2 * markPad) + 'px';
-        svg.style.height = (h + 2 * markPad) + 'px';
+        svg.style.width = vbW + 'px';
+        svg.style.height = vbH + 'px';
       }
       var rc = rough.svg(svg), drew = false;
       // boxes: outer frames rougher than small controls; radius follows the CSS corner
@@ -278,15 +330,27 @@
       }
       // change marks: colored sketch ring just outside the element (replaces the CSS outline)
       if (cl.contains('wf-added') || cl.contains('wf-removed')){
-        var add = cl.contains('wf-added');
-        var color = root.getPropertyValue(add ? '--add-b' : '--del-b').trim();
-        svg.appendChild(rc.path(rrPath(w, h, 6, -3),
-          opts(color, 1.5, 1, add ? {} : { strokeLineDash: [7, 4] })));
-        cl.add('wf-roughed-mark'); drew = true;
+        if (skipRowMark) cl.add('wf-roughed-mark');
+        else {
+          var add = cl.contains('wf-added');
+          var color = root.getPropertyValue(add ? '--add-b' : '--del-b').trim();
+          var ringX = markUnion ? markUnion.x : 0, ringY = markUnion ? markUnion.y : 0;
+          var ringW = markUnion ? markUnion.w : w, ringH = markUnion ? markUnion.h : h;
+          var ring = rc.path(rrPath(ringW, ringH, 6, -3),
+            opts(color, 1.5, 1, add ? {} : { strokeLineDash: [7, 4] }));
+          if (ringX || ringY){
+            var wrap = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            wrap.setAttribute('transform', 'translate(' + ringX + ' ' + ringY + ')');
+            wrap.appendChild(ring);
+            svg.appendChild(wrap);
+          } else svg.appendChild(ring);
+          cl.add('wf-roughed-mark'); drew = true;
+        }
       }
       if (drew){ el.insertBefore(svg, el.firstChild); el.dataset.roughDone = '1'; }
+      else if (skipRowMark){ el.dataset.roughDone = '1'; }
     }
-    function sketchAll(){ document.querySelectorAll(TARGETS).forEach(sketch); }
+    function sketchAll(){ refreshRowMarkMerge(); document.querySelectorAll(TARGETS).forEach(sketch); }
     var resizeT;
     function resketchAll(){
       document.querySelectorAll('[data-rough-done]').forEach(clearSketch);

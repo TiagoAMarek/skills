@@ -90,6 +90,7 @@ A wireframe is a **sketch, not a screenshot**, and is half-mechanical: every lab
 **Change marks (`.wf-added` / `.wf-removed`):**
 - **Structural rows** (whole landmark moved/added): put the class on the `.wf-row` (page chrome, submenu state rows).
 - **Label inside a row** (only part of the row changed): put the class on an inner `<span>`, not the row (nav landmark labels).
+- **Consecutive row marks**: same-polarity `.wf-row` marks that stack without an unmarked row between them auto-merge into one sketch ring at runtime — keep marking every structural row; do not drop marks to avoid overlap.
 - **Browser surfaces** (`data-surface="browser"`): Before/After auto-stack vertically; do not force side-by-side.
 
 ### 3d. Verify before delivery (hard gate)
