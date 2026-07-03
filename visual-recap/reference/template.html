@@ -82,7 +82,8 @@
   pre{margin:0;overflow-x:auto} pre code{font-size:12.5px;line-height:1.5}
   .diff-stat{color:var(--muted);font-weight:400;margin-left:auto;white-space:nowrap}
   .diff-stat .a{color:var(--add-b)} .diff-stat .d{color:var(--del-b)}
-  /* rendered diff (line numbers + syntax + word-level, split/unified) — built at runtime from pre.vr-diff */
+  /* rendered diff (line numbers + syntax + word-level, split/unified) — built at runtime from script.vr-diff */
+  script.vr-diff{display:none}
   .vr-view{overflow-x:auto}
   table.vr-diff{border-collapse:collapse;width:100%;
     font-family:var(--mono);font-size:12.5px;line-height:1.5}
@@ -360,7 +361,8 @@ graph LR
         <figcaption class="wf-caption">Share popover: link sharing replaced by org-scoped access</figcaption>
       </figure>
 
-      <!-- DIFF block: paste the RAW unified git hunk into pre.vr-diff, set data-lang from the file ext.
+      <!-- DIFF block: paste the RAW unified git hunk into script.vr-diff (type=text/plain), set data-lang
+           from the file ext. script blocks keep JSX/HTML in hunks from breaking the page DOM.
            The runtime renderer adds line numbers, per-line syntax colors, word-level emphasis, and a
            side-by-side split view (default, with a per-diff unified toggle; set data-mode="unified"
            on a genuinely narrow hunk). Do NOT hand-author highlighting. Collapse by DEFAULT (no `open`)
@@ -370,7 +372,7 @@ graph LR
         <summary>src/auth.ts <span class="sum">— login becomes async, verifies hash</span>
           <span class="diff-stat"><span class="a">+42</span> <span class="d">−7</span></span></summary>
         <div class="body">
-<pre class="vr-diff" data-lang="typescript">@@ -1,7 +1,12 @@
+<script type="text/plain" class="vr-diff" data-lang="typescript">@@ -1,7 +1,12 @@
 -export function login(u, p) {
 -  return db.check(u, p)
 +export async function login(u, p) {
@@ -378,7 +380,7 @@ graph LR
 +  if (!user) throw new AuthError('no user')
 +  return verify(p, user.hash)
  }
-</pre>
+</script>
 
           <!-- DIFF NOTES (key files only): 2–4 high-signal callouts anchored to the hunk's line
                numbers. data-line = new-side number; data-side="before" anchors a removed line.
@@ -443,7 +445,7 @@ graph LR
 <script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/mermaid.min.js"></script>
 <script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/rough.min.js"></script>
 <script>
-  // ---- rich diff renderer: pre.vr-diff -> table with line numbers, syntax colors, word-level emphasis ----
+  // ---- rich diff renderer: script.vr-diff -> table with line numbers, syntax colors, word-level emphasis ----
   (function(){
     function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     function toks(s){return s.match(/\s+|[A-Za-z0-9_$]+|[^\sA-Za-z0-9_$]/g)||[];}
@@ -503,10 +505,10 @@ graph LR
       });
       return out;
     }
-    function render(pre){
-      var lang=pre.getAttribute('data-lang')||'plaintext';
+    function render(src){
+      var lang=src.getAttribute('data-lang')||'plaintext';
       if(!hljs.getLanguage(lang))lang='plaintext';
-      var raw=pre.textContent.replace(/\n$/,''),lines=raw.split('\n');
+      var raw=src.textContent.replace(/\n$/,''),lines=raw.split('\n');
       var rows=[],oldNo=0,newNo=0,inHunk=false,k;
       for(k=0;k<lines.length;k++){
         var line=lines[k],hm;
@@ -580,12 +582,12 @@ graph LR
         }
       });
       spl+='</tbody></table>';
-      var mode=pre.getAttribute('data-mode')==='unified'?'unified':'split';
+      var mode=src.getAttribute('data-mode')==='unified'?'unified':'split';
       var box=document.createElement('div');box.className='vr-box';box.setAttribute('data-mode',mode);
       box.innerHTML='<div class="vr-mode"><button type="button" data-m="split">split</button>'+
         '<button type="button" data-m="unified">unified</button></div>'+
         '<div class="vr-view split">'+spl+'</div><div class="vr-view unified">'+uni+'</div>';
-      pre.replaceWith(box);
+      src.replaceWith(box);
       box.querySelectorAll('.vr-mode button').forEach(function(b){
         b.addEventListener('click',function(){box.setAttribute('data-mode',b.dataset.m);});
       });
@@ -608,11 +610,13 @@ graph LR
         if(!notes.children.length)notes.remove();
       }
     }
-    document.querySelectorAll('pre.vr-diff').forEach(function(pre){
-      try{render(pre);}
-      catch(e){ // graceful fallback to plain diff coloring
-        var c=document.createElement('code');c.className='language-diff';c.textContent=pre.textContent;
-        pre.textContent='';pre.appendChild(c);pre.classList.remove('vr-diff');
+    document.querySelectorAll('script.vr-diff, pre.vr-diff').forEach(function(src){
+      try{render(src);}
+      catch(e){ // graceful fallback to plain diff coloring (legacy pre.vr-diff only)
+        if(src.tagName!=='PRE')return;
+        var c=document.createElement('code');c.className='language-diff';c.textContent=src.textContent;
+        var pre=document.createElement('pre');pre.appendChild(c);
+        src.replaceWith(pre);
       }
     });
   })();
