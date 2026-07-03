@@ -1,0 +1,229 @@
+/* visual-recap recap-chrome.css — v1. do not copy into recaps; link via file:// */
+
+:root{
+  /* warm graphite "carbon paper" — the only color on the page is meaning */
+  --bg:#14130f; --panel:#1c1a15; --panel2:#100f0c; --border:#33302a; --rule:#4a4636;
+  --fg:#ece7db; --muted:#9a917f;
+  /* semantic hues, warmed to sit on warm paper — reserved for diff/status meaning only */
+  --add:#4fae5a24; --add-b:#5fbf6a; --del:#e5484d24; --del-b:#e5726f;
+  --chip:#232019; --mod:#d99a2b; --new:#5fbf6a; --rm:#e5726f; --ren:#b98cf0;
+  /* type: mono = the machine's voice, sans = your judgment */
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 var(--sans)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px}
+a:hover{text-decoration-color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
+/* header = case file: mono eyebrow, mono title, mono ledger case-line */
+header.rc{margin-bottom:20px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 9px}
+header.rc h1{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.01em;margin:0 0 9px}
+.caseline{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.caseline .a{color:var(--add-b)} .caseline .d{color:var(--del-b)}
+/* signature: the verdict stamp — top rule + label, sans body, ledger facts */
+.tldr{background:var(--panel);border:1px solid var(--border);border-top:2px solid var(--fg);
+  border-radius:0 0 8px 8px;padding:16px 18px;margin:18px 0}
+.tldr .vlabel{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.22em;
+  color:var(--muted);margin:0 0 11px}
+.tldr .what{font-family:var(--sans);font-size:15.5px;font-weight:600;line-height:1.4;margin:0 0 11px}
+.tldr ul{list-style:none;margin:0;padding:0}
+.tldr li{font-family:var(--sans);margin:4px 0;padding-left:16px;position:relative;color:var(--fg)}
+.tldr li::before{content:"·";position:absolute;left:3px;color:var(--muted);font-weight:700}
+.tldr .facts{display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-end;margin-top:15px;
+  padding-top:11px;border-top:1px solid var(--border);font-family:var(--mono);font-size:12px}
+.fact{color:var(--muted)}
+.fact.plus{color:var(--add-b)} .fact.minus{color:var(--del-b)}
+.fact.ok{color:var(--new)} .fact.warn{color:var(--mod)} .fact.none{color:var(--rm)}
+.fact.risk-low{color:var(--new)} .fact.risk-med{color:var(--mod)} .fact.risk-high{color:var(--rm)}
+section.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:16px 18px;margin:16px 0}
+h2.sec{font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.16em;
+  color:var(--muted);font-weight:600;margin:0 0 12px}
+h3.blk{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:18px 0 8px}
+p{margin:8px 0}
+/* tabs */
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 0;border-bottom:1px solid var(--border)}
+nav.tabs button{background:transparent;border:0;color:var(--muted);padding:9px 14px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.03em;
+  cursor:pointer;border-bottom:2px solid transparent}
+nav.tabs button:hover{color:var(--fg)}
+nav.tabs button.active{color:var(--fg);border-bottom-color:var(--fg)}
+.tab-panel{display:none} .tab-panel.active{display:block}
+/* collapsible */
+details.fold{border:1px solid var(--border);border-radius:8px;margin:10px 0;overflow:hidden}
+details.fold>summary{cursor:pointer;list-style:none;padding:9px 12px;background:var(--panel2);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;display:flex;
+  align-items:center;gap:10px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"▸";color:var(--muted);transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0}
+/* code / diff */
+pre{margin:0;overflow-x:auto} pre code{font-size:12.5px;line-height:1.5}
+.diff-stat{color:var(--muted);font-weight:400;margin-left:auto;white-space:nowrap}
+.diff-stat .a{color:var(--add-b)} .diff-stat .d{color:var(--del-b)}
+/* rendered diff (line numbers + syntax + word-level, split/unified) — built at runtime from script.vr-diff */
+script.vr-diff{display:none}
+.vr-view{overflow-x:auto}
+table.vr-diff{border-collapse:collapse;width:100%;
+  font-family:var(--mono);font-size:12.5px;line-height:1.5}
+table.vr-diff td{padding:0 10px;vertical-align:top;white-space:pre}
+table.vr-diff td.ln{text-align:right;color:var(--muted);user-select:none;width:1%;white-space:nowrap;
+  border-right:1px solid var(--border);padding:0 8px;opacity:.65}
+table.vr-diff td.code{width:100%}
+table.vr-diff tr.add td{background:var(--add)} table.vr-diff tr.add td.ln{background:#4fae5a14}
+table.vr-diff tr.del td{background:var(--del)} table.vr-diff tr.del td.ln{background:#e5484d14}
+table.vr-diff tr.hunk td{color:var(--muted);background:var(--panel2)}
+table.vr-diff tr.meta td{color:var(--muted);opacity:.7}
+.wd{border-radius:0;padding:0}  /* flush: adjacent .wd spans read as one continuous band */
+table.vr-diff tr.add .wd{background:#5fbf6a55} table.vr-diff tr.del .wd{background:#e5726f55}
+/* split view: per-cell coloring (unified colors whole rows above) */
+table.vr-diff.split{table-layout:fixed}
+table.vr-diff.split td.code{width:50%;white-space:pre-wrap;overflow-wrap:anywhere}
+table.vr-diff.split td.code.add,table.vr-diff.split td.ln.add{background:var(--add)}
+table.vr-diff.split td.code.del,table.vr-diff.split td.ln.del{background:var(--del)}
+table.vr-diff.split td.code.add .wd{background:#5fbf6a55} table.vr-diff.split td.code.del .wd{background:#e5726f55}
+table.vr-diff.split td.lnr{border-left:1px solid var(--border)}
+table.vr-diff td.void{background:repeating-linear-gradient(45deg,transparent,transparent 6px,#ffffff06 6px,#ffffff06 7px)}
+/* mode toggle bar (runtime-built above each rendered diff) */
+.vr-mode{display:flex;justify-content:flex-end;gap:6px;padding:5px 8px;background:var(--panel2);border-bottom:1px solid var(--border)}
+.vr-mode button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);background:transparent;border:0;cursor:pointer;padding:1px 7px;border-radius:4px}
+.vr-mode button:hover{color:var(--fg)}
+.vr-box[data-mode="split"] .vr-mode button[data-m="split"],
+.vr-box[data-mode="unified"] .vr-mode button[data-m="unified"]{color:var(--fg);background:var(--chip)}
+.vr-box[data-mode="split"] .vr-view.unified{display:none}
+.vr-box[data-mode="unified"] .vr-view.split{display:none}
+/* diff notes: injected inline as callout rows; unmatched notes fall back to this list styling */
+tr.noterow td{padding:2px 10px 6px;white-space:normal}
+tr.noterow .note{margin:2px 0;font-family:var(--sans)}
+ul.vr-notes{list-style:none;margin:8px 0;padding:0}
+ul.vr-notes li{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:6px 0;font-size:12.5px}
+ul.vr-notes li::before{content:"L" attr(data-line) " · ";font-family:var(--mono);color:var(--muted);font-size:11px}
+/* data-model */
+table.dm{border-collapse:collapse;width:100%;font-size:13px}
+table.dm th,table.dm td{border:1px solid var(--border);padding:6px 10px;text-align:left}
+table.dm th{background:var(--panel2);color:var(--muted);font-weight:600}
+.badge{display:inline-block;border-radius:4px;padding:1px 7px;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.badge.added{background:#4fae5a22;color:var(--new)}
+.badge.modified{background:#d99a2b22;color:var(--mod)}
+.badge.removed{background:#e5484d22;color:var(--rm)}
+.badge.renamed{background:#b98cf022;color:var(--ren)}
+.was{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-left:6px}
+/* api-endpoint */
+.ep{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:10px 0}
+.ep .row{display:flex;gap:10px;align-items:center;padding:9px 12px;background:var(--panel2);
+  font-family:var(--mono);font-size:13px}
+.method{font-family:var(--mono);font-weight:700;padding:1px 8px;border-radius:4px;font-size:11px}
+.method.GET{background:#5bb0a633;color:#6cc0b6} .method.POST{background:#4fae5a33;color:var(--new)}
+.method.PUT{background:#d99a2b33;color:var(--mod)} .method.PATCH{background:#b98cf033;color:var(--ren)}
+.method.DELETE{background:#e5484d33;color:var(--rm)}
+.ep .io{padding:10px 12px;border-top:1px solid var(--border)}
+.ep .io h4{margin:0 0 6px;font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em}
+/* file-tree */
+ul.tree{list-style:none;margin:0;padding:0 0 0 4px;font-family:var(--mono);font-size:13px}
+ul.tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px solid var(--border)}
+ul.tree li{padding:2px 0}
+.tree .dir{color:var(--muted)} .tree .f{color:var(--fg)}
+.tree .badge{margin-left:8px}
+/* annotated code note */
+.note{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:8px 0;
+  font-size:12.5px;color:var(--fg)}
+/* ---- wireframe kit (.wf-*): a sketch of the UI, never a screenshot ---- */
+/* Excalifont (OFL, vendored): the hand-drawn voice of the sketch. Applies INSIDE .wf-screen only;
+   captions and Before/After labels stay mono (document furniture, not the drawing). */
+@font-face{font-family:'Excalifont';
+  src:url('Excalifont-Regular.woff2') format('woff2')}
+.wf-fig{margin:12px 0}
+.wf-caption{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
+.wf-caption::after{content:" · layout inferred from code, not a screenshot";opacity:.8}
+/* compare pairs: narrow surfaces sit side by side; browser frames auto-stack (too wide to halve) */
+.wf-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.wf-compare:has(.wf-screen[data-surface="browser"]){grid-template-columns:1fr}
+@media (max-width:700px){.wf-compare{grid-template-columns:1fr}}
+.wf-side::before{content:attr(data-label);display:block;font-family:var(--mono);font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+/* surfaces */
+.wf-screen{background:var(--panel2);border:1px solid var(--rule);border-radius:10px;padding:12px;
+  font-family:'Excalifont','Comic Sans MS',cursive;font-size:13.5px;color:var(--fg)}
+.wf-screen[data-surface="browser"]{padding-top:0;border-radius:8px}
+.wf-screen[data-surface="browser"]::before{content:"";display:block;height:26px;margin:0 -12px 10px;
+  border-bottom:1px solid var(--border);background:
+   radial-gradient(circle 4px at 16px 13px,var(--rule) 4px,transparent 5px),
+   radial-gradient(circle 4px at 30px 13px,var(--rule) 4px,transparent 5px),
+   radial-gradient(circle 4px at 44px 13px,var(--rule) 4px,transparent 5px)}
+.wf-screen[data-surface="phone"]{max-width:280px;margin:0 auto;border-radius:22px;border-width:2px;padding:14px 12px}
+.wf-screen[data-surface="dialog"]{max-width:420px;margin:0 auto;border-radius:12px}
+.wf-screen[data-surface="popover"]{max-width:300px;border-radius:8px;position:relative;margin-top:6px}
+.wf-screen[data-surface="panel"]{max-width:340px;margin-left:auto;min-height:200px;
+  border-radius:8px 0 0 8px;border-right:0}
+/* hand-drawn sketch overlay (Rough.js): every wf primitive is redrawn wobbly at runtime —
+   frames/buttons/inputs as rough rects, row/topbar/tab dividers as rough lines, avatars as
+   hachured circles, pills as capsules, change marks as colored rings. The crisp CSS borders
+   below are the no-JS fallback; the script swaps each one to transparent (wf-roughed /
+   wf-roughed-b) only after its sketch has drawn. */
+.wf-screen,.wf-btn,.wf-input,.wf-pill,.wf-avatar,.wf-topbar,.wf-row,.wf-tabs,.wf-tab,
+.wf-added,.wf-removed{position:relative;isolation:isolate}
+.wf-rough-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible}
+.wf-added > .wf-rough-layer,.wf-removed > .wf-rough-layer{z-index:1;width:auto;height:auto}
+.wf-roughed{border-color:transparent}
+.wf-roughed-b{border-bottom-color:transparent}
+.wf-btn.primary.wf-roughed-fill{background:transparent}
+.wf-avatar.wf-roughed{background:transparent}
+.wf-screen.wf-roughed[data-surface="browser"]::before{background:none;border-bottom-color:transparent}
+/* primitives */
+.wf-topbar{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+.wf-title{font-weight:600}
+.wf-spacer{flex:1}
+.wf-btn{border:1px solid var(--rule);border-radius:6px;padding:2px 10px;background:transparent;
+  color:var(--fg);font:inherit;font-size:12px}
+.wf-btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.wf-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.wf-row:last-child{border-bottom:0}
+.wf-input{display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:4px 8px;color:var(--muted)}
+.wf-pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:11px;color:var(--muted)}
+.wf-avatar{width:18px;height:18px;border-radius:50%;background:var(--rule);flex:none}
+.wf-bar{display:inline-block;height:8px;border-radius:4px;background:var(--chip);vertical-align:middle}
+.wf-muted{color:var(--muted)}
+.wf-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.wf-tab{padding:3px 10px;font-size:12px;color:var(--muted)}
+.wf-tab.on{color:var(--fg);border-bottom:2px solid var(--fg)}
+/* change marks: what THIS diff added/removed inside the sketch */
+.wf-added{outline:1.5px solid var(--add-b);outline-offset:2px;border-radius:6px}
+.wf-removed{outline:1.5px dashed var(--del-b);outline-offset:2px;border-radius:6px;opacity:.75}
+.wf-added.wf-roughed-mark,.wf-removed.wf-roughed-mark{outline:none}
+.mermaid{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;
+  text-align:center;margin:10px 0}
+code.inline{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:var(--mono)}
+/* warm the vendored github-dark tokens so syntax harmonizes with the paper */
+.hljs-keyword,.hljs-built_in,.hljs-literal{color:#d98c5f}
+.hljs-string,.hljs-regexp,.hljs-addition{color:#a3b06a}
+.hljs-title,.hljs-title.function_,.hljs-section,.hljs-name{color:#e0c06a}
+.hljs-number{color:#c98a7a} .hljs-attr,.hljs-variable,.hljs-property{color:#cbb98a}
+.hljs-comment,.hljs-quote{color:var(--muted);font-style:italic} .hljs-type{color:#7fb5ac}
+/* --- readability (ADHD): short measure on prose only, never on code --- */
+p{max-width:64ch}
+.tldr .what,.tldr li,ul.overview li,.tab-panel>.card>p.prose{max-width:64ch}
+ul.overview{list-style:none;margin:0 0 4px;padding:0}
+ul.overview li{position:relative;padding-left:16px;margin:6px 0;line-height:1.5}
+ul.overview li::before{content:"\2192";position:absolute;left:0;color:var(--muted)}
+ul.overview li b:not(.bx),.tldr li b:not(.bx){color:var(--fg);font-weight:600}
+/* bionic-reading: prefixes pre-wrapped in .bx, bolded only when body.bionic */
+.bx{font-weight:inherit;color:inherit}
+body.bionic .bx{font-weight:700;color:var(--fg)}
+/* header controls (bionic toggle) */
+.controls{float:right;display:flex;gap:8px}
+.controls button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:5px;
+  padding:3px 10px;cursor:pointer}
+.controls button:hover{color:var(--fg);border-color:var(--rule)}
+.controls button.on{color:var(--fg);border-color:var(--fg)}
+.fold .sum{color:var(--muted);font-weight:400;flex:1;min-width:0}
+.dm-wrap{overflow-x:auto}
+button:focus-visible,summary:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+@media (max-width:560px){.tldr .facts{justify-content:flex-start}}
