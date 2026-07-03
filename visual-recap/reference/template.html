@@ -70,14 +70,14 @@
   details.fold{border:1px solid var(--border);border-radius:8px;margin:10px 0;overflow:hidden}
   details.fold>summary{cursor:pointer;list-style:none;padding:9px 12px;background:var(--panel2);
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;display:flex;
-    justify-content:space-between;align-items:center;gap:10px}
+    align-items:center;gap:10px}
   details.fold>summary::-webkit-details-marker{display:none}
   details.fold>summary::before{content:"▸";color:var(--muted);transition:transform .15s}
   details.fold[open]>summary::before{transform:rotate(90deg)}
   details.fold .body{padding:0}
   /* code / diff */
   pre{margin:0;overflow-x:auto} pre code{font-size:12.5px;line-height:1.5}
-  .diff-stat{color:var(--muted);font-weight:400}
+  .diff-stat{color:var(--muted);font-weight:400;margin-left:auto;white-space:nowrap}
   .diff-stat .a{color:var(--add-b)} .diff-stat .d{color:var(--del-b)}
   /* rendered diff (line numbers + syntax + word-level) — built at runtime from pre.vr-diff */
   .vr-diff-wrap{overflow-x:auto}
@@ -133,11 +133,11 @@
   .hljs-comment,.hljs-quote{color:var(--muted);font-style:italic} .hljs-type{color:#7fb5ac}
   /* --- readability (ADHD): short measure on prose only, never on code --- */
   p{max-width:64ch}
-  .tldr .what,.tldr li,ul.overview li,.note,.tab-panel>.card>p.prose{max-width:64ch}
+  .tldr .what,.tldr li,ul.overview li,.tab-panel>.card>p.prose{max-width:64ch}
   ul.overview{list-style:none;margin:0 0 4px;padding:0}
   ul.overview li{position:relative;padding-left:16px;margin:6px 0;line-height:1.5}
   ul.overview li::before{content:"\2192";position:absolute;left:0;color:var(--muted)}
-  ul.overview li b,.tldr li b{color:var(--fg);font-weight:600}
+  ul.overview li b:not(.bx),.tldr li b:not(.bx){color:var(--fg);font-weight:600}
   /* bionic-reading: prefixes pre-wrapped in .bx, bolded only when body.bionic */
   .bx{font-weight:inherit;color:inherit}
   body.bionic .bx{font-weight:700;color:var(--fg)}
@@ -148,7 +148,11 @@
     padding:3px 10px;cursor:pointer}
   .controls button:hover{color:var(--fg);border-color:var(--rule)}
   .controls button.on{color:var(--fg);border-color:var(--fg)}
-  .fold .sum{color:var(--muted);font-weight:400}
+  .fold .sum{color:var(--muted);font-weight:400;flex:1;min-width:0}
+  .dm-wrap{overflow-x:auto}
+  button:focus-visible,summary:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+  @media (max-width:560px){.tldr .facts{justify-content:flex-start}}
 </style>
 
 <div class="wrap">
@@ -267,6 +271,7 @@ graph LR
     <section class="card">
       <p class="prose">What changed in the data shape.</p>
       <h3 class="blk">Data model — Session</h3>
+      <div class="dm-wrap">
       <table class="dm">
         <tr><th>Field</th><th>Type</th><th>Change</th></tr>
         <tr><td>id</td><td>uuid</td><td></td></tr>
@@ -274,6 +279,7 @@ graph LR
         <tr><td>expiresAt</td><td>Date</td><td><span class="badge modified">modified</span></td></tr>
         <tr><td>legacyKey</td><td>string</td><td><span class="badge removed">removed</span></td></tr>
       </table>
+      </div>
     </section>
   </section>
 
@@ -416,7 +422,15 @@ graph LR
   // syntax highlighting (annotated-code blocks; rendered diffs already colored above)
   try { hljs.highlightAll(); } catch(e){}
   // diagrams
-  try { mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' }); } catch(e){}
+  // diagrams: 'base' theme + themeVariables mapped from the page's carbon-paper tokens
+  try { mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: 'base', themeVariables: {
+    background:'#100f0c', primaryColor:'#1c1a15', primaryTextColor:'#ece7db', primaryBorderColor:'#4a4636',
+    secondaryColor:'#232019', secondaryTextColor:'#ece7db', secondaryBorderColor:'#33302a',
+    tertiaryColor:'#1c1a15', tertiaryTextColor:'#ece7db', tertiaryBorderColor:'#33302a',
+    lineColor:'#4a4636', textColor:'#ece7db', edgeLabelBackground:'#100f0c',
+    clusterBkg:'#1c1a15', clusterBorder:'#33302a', nodeTextColor:'#ece7db',
+    fontFamily:'"SF Mono",ui-monospace,Menlo,monospace', fontSize:'13px'
+  }}); } catch(e){}
   // tabs
   document.querySelectorAll('#tabs button').forEach(function(b){
     b.addEventListener('click', function(){
