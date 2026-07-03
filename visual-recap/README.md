@@ -14,6 +14,8 @@ away.
   first, and mechanical facts (files, +/−, test coverage, risk).
 - **Wireframes** for any UI change — Before/After sketches of the actual
   surface (popover, dialog, panel, phone, browser), not just a code diff.
+  Rendered hand-drawn: Rough.js sketch borders + the Excalifont handwriting
+  font (both vendored), so a sketch never reads as a screenshot.
 - **Split diffs** with syntax highlighting, word-level emphasis, and a
   Unified/Split toggle, plus line-anchored notes on the hunks that matter.
 - **Data model** and **API endpoint** blocks for schema/contract changes, with

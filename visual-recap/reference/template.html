@@ -150,6 +150,10 @@
   .note{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:8px 0;
     font-size:12.5px;color:var(--fg)}
   /* ---- wireframe kit (.wf-*): a sketch of the UI, never a screenshot ---- */
+  /* Excalifont (OFL, vendored): the hand-drawn voice of the sketch. Applies INSIDE .wf-screen only;
+     captions and Before/After labels stay mono (document furniture, not the drawing). */
+  @font-face{font-family:'Excalifont';
+    src:url('file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/Excalifont-Regular.woff2') format('woff2')}
   .wf-fig{margin:12px 0}
   .wf-caption{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
   .wf-caption::after{content:" · layout inferred from code, not a screenshot";opacity:.8}
@@ -161,7 +165,7 @@
     letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
   /* surfaces */
   .wf-screen{background:var(--panel2);border:1px solid var(--rule);border-radius:10px;padding:12px;
-    font-family:var(--sans);font-size:12.5px;color:var(--fg)}
+    font-family:'Excalifont','Comic Sans MS',cursive;font-size:13.5px;color:var(--fg)}
   .wf-screen[data-surface="browser"]{padding-top:0;border-radius:8px}
   .wf-screen[data-surface="browser"]::before{content:"";display:block;height:26px;margin:0 -12px 10px;
     border-bottom:1px solid var(--border);background:
@@ -169,13 +173,24 @@
      radial-gradient(circle 4px at 30px 13px,var(--rule) 4px,transparent 5px),
      radial-gradient(circle 4px at 44px 13px,var(--rule) 4px,transparent 5px)}
   .wf-screen[data-surface="phone"]{max-width:280px;margin:0 auto;border-radius:22px;border-width:2px;padding:14px 12px}
-  .wf-screen[data-surface="dialog"]{max-width:420px;margin:0 auto;border-radius:12px;box-shadow:0 12px 40px #00000066}
-  .wf-screen[data-surface="popover"]{max-width:300px;border-radius:8px;position:relative;margin-top:6px;
-    box-shadow:0 8px 24px #00000055}
-  .wf-screen[data-surface="popover"]::before{content:"";position:absolute;top:-5px;left:24px;width:9px;height:9px;
-    background:var(--panel2);border-left:1px solid var(--rule);border-top:1px solid var(--rule);transform:rotate(45deg)}
+  .wf-screen[data-surface="dialog"]{max-width:420px;margin:0 auto;border-radius:12px}
+  .wf-screen[data-surface="popover"]{max-width:300px;border-radius:8px;position:relative;margin-top:6px}
   .wf-screen[data-surface="panel"]{max-width:340px;margin-left:auto;min-height:200px;
-    border-radius:8px 0 0 8px;border-right:0;box-shadow:-8px 0 24px #00000044}
+    border-radius:8px 0 0 8px;border-right:0}
+  /* hand-drawn sketch overlay (Rough.js): every wf primitive is redrawn wobbly at runtime —
+     frames/buttons/inputs as rough rects, row/topbar/tab dividers as rough lines, avatars as
+     hachured circles, pills as capsules, change marks as colored rings. The crisp CSS borders
+     below are the no-JS fallback; the script swaps each one to transparent (wf-roughed /
+     wf-roughed-b) only after its sketch has drawn. */
+  .wf-screen,.wf-btn,.wf-input,.wf-pill,.wf-avatar,.wf-topbar,.wf-row,.wf-tabs,.wf-tab,
+  .wf-added,.wf-removed{position:relative;isolation:isolate}
+  .wf-rough-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible}
+  .wf-roughed{border-color:transparent}
+  .wf-roughed-b{border-bottom-color:transparent}
+  .wf-roughed-mark{outline:none}
+  .wf-btn.primary.wf-roughed-fill{background:transparent}
+  .wf-avatar.wf-roughed{background:transparent}
+  .wf-screen.wf-roughed[data-surface="browser"]::before{background:none;border-bottom-color:transparent}
   /* primitives */
   .wf-topbar{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)}
   .wf-title{font-weight:600}
@@ -185,8 +200,8 @@
   .wf-btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
   .wf-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
   .wf-row:last-child{border-bottom:0}
-  .wf-input{border:1px solid var(--rule);border-radius:6px;padding:4px 8px;color:var(--muted)}
-  .wf-pill{border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:11px;color:var(--muted)}
+  .wf-input{display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:4px 8px;color:var(--muted)}
+  .wf-pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:11px;color:var(--muted)}
   .wf-avatar{width:18px;height:18px;border-radius:50%;background:var(--rule);flex:none}
   .wf-bar{display:inline-block;height:8px;border-radius:4px;background:var(--chip);vertical-align:middle}
   .wf-muted{color:var(--muted)}
@@ -316,7 +331,10 @@ graph LR
            Surfaces: data-surface="browser" | "phone" | "dialog" | "popover" | "panel" (omit = bare card).
            Compare pair: .wf-compare > .wf-side[data-label="Before"|"After"]. Narrow surfaces render
            side by side; browser frames auto-stack. After-only change: drop .wf-compare, keep .wf-fig.
-           Mark what the diff added/removed with .wf-added / .wf-removed on the element. -->
+           Mark what the diff added/removed with .wf-added / .wf-removed on the element.
+           The vendored Rough.js + Excalifont render the whole kit hand-drawn at runtime — frames,
+           buttons, inputs, dividers, pills, avatars, change marks, and the handwriting font inside
+           screens. Just author plain markup; no extra classes/attributes needed for the sketch. -->
       <h3 class="blk">UI — share popover</h3>
       <figure class="wf-fig">
         <div class="wf-compare">
@@ -423,6 +441,7 @@ graph LR
 <!-- ============ VENDORED RUNTIME — do not edit paths ============ -->
 <script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/highlight.min.js"></script>
 <script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/mermaid.min.js"></script>
+<script src="file:///Users/tiagomarek/.claude/skills/visual-recap/vendor/rough.min.js"></script>
 <script>
   // ---- rich diff renderer: pre.vr-diff -> table with line numbers, syntax colors, word-level emphasis ----
   (function(){
@@ -609,6 +628,110 @@ graph LR
     clusterBkg:'#1c1a15', clusterBorder:'#33302a', nodeTextColor:'#ece7db',
     fontFamily:'"SF Mono",ui-monospace,Menlo,monospace', fontSize:'13px'
   }}); } catch(e){}
+  // wireframe sketch: Rough.js redraws the whole .wf-* kit hand-drawn — frames/buttons/inputs
+  // as wobbly rects (radius-aware), row/topbar/tab dividers as lines, avatars as hachured
+  // circles, pills as capsules, .wf-added/.wf-removed as colored rings. Colors come from each
+  // element's own computed style so surface variants stay in sync automatically. Seeded by
+  // draw order so the sketch is stable across reloads. Panels start display:none, so a tab's
+  // wireframes are sketched lazily on first activation (offsetWidth is 0 while hidden).
+  (function(){
+    if (typeof rough === 'undefined') return;
+    var seed = 1;
+    var TARGETS = '.wf-screen,.wf-btn,.wf-input,.wf-pill,.wf-avatar,.wf-topbar,.wf-row,.wf-tabs,.wf-tab.on,.wf-added,.wf-removed';
+    var root = getComputedStyle(document.documentElement);
+    function opts(stroke, sw, roughness, extra){
+      var o = { stroke: stroke, strokeWidth: sw, roughness: roughness, bowing: 1,
+                fillStyle: 'none', seed: seed++ };
+      for (var k in (extra || {})) o[k] = extra[k];
+      return o;
+    }
+    // rounded-rect svg path: inset i (negative = ring outside the box), corner radius r
+    function rrPath(w, h, r, i){
+      var x0 = i, y0 = i, x1 = w - i, y1 = h - i, rr = Math.max(0, Math.min(r - i, (y1 - y0) / 2));
+      if (rr < 1.5) return 'M' + x0 + ' ' + y0 + ' L' + x1 + ' ' + y0 + ' L' + x1 + ' ' + y1 +
+                           ' L' + x0 + ' ' + y1 + ' Z';
+      var a = function(x, y){ return 'A' + rr + ' ' + rr + ' 0 0 1 ' + x + ' ' + y + ' '; };
+      return 'M' + (x0 + rr) + ' ' + y0 + ' L' + (x1 - rr) + ' ' + y0 + ' ' + a(x1, y0 + rr) +
+             'L' + x1 + ' ' + (y1 - rr) + ' ' + a(x1 - rr, y1) + 'L' + (x0 + rr) + ' ' + y1 + ' ' +
+             a(x0, y1 - rr) + 'L' + x0 + ' ' + (y0 + rr) + ' ' + a(x0 + rr, y0) + 'Z';
+    }
+    function clearSketch(el){
+      var layer = el.querySelector(':scope > svg.wf-rough-layer');
+      if (layer) layer.remove();
+      el.classList.remove('wf-roughed', 'wf-roughed-b', 'wf-roughed-mark', 'wf-roughed-fill');
+      delete el.dataset.roughDone;
+    }
+    function sketch(el){
+      if (el.dataset.roughDone) return;
+      if (/^(INPUT|TEXTAREA|SELECT|HR|IMG|BR)$/.test(el.tagName)) return; // void/replaced: can't hold the overlay, keep crisp CSS
+      var w = el.offsetWidth, h = el.offsetHeight;
+      if (!w || !h) return; // hidden tab panel — picked up on tab activation instead
+      var cs = getComputedStyle(el);
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'wf-rough-layer');
+      svg.setAttribute('width', w); svg.setAttribute('height', h);
+      svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+      var rc = rough.svg(svg), drew = false;
+      var cl = el.classList;
+      // boxes: outer frames rougher than small controls; radius follows the CSS corner
+      if (cl.contains('wf-screen') || cl.contains('wf-btn') || cl.contains('wf-input')){
+        var bw = parseFloat(cs.borderTopWidth) || 1;
+        var r = parseFloat(cs.borderTopLeftRadius) || 0;
+        var rough_ = cl.contains('wf-screen') ? 1.3 : 1;
+        // filled (primary) buttons: rough-solid fill replaces the crisp CSS background,
+        // otherwise stroke and fill are the same color and the sketch is invisible
+        var filled = cl.contains('wf-btn') && cl.contains('primary');
+        svg.appendChild(rc.path(rrPath(w, h, r, bw / 2), opts(cs.borderTopColor, bw, rough_,
+          filled ? { fill: cs.backgroundColor, fillStyle: 'solid' } : {})));
+        if (filled) cl.add('wf-roughed-fill');
+        cl.add('wf-roughed'); drew = true;
+        if (el.getAttribute('data-surface') === 'browser'){
+          [16, 30, 44].forEach(function(x){
+            svg.appendChild(rc.circle(x, 13, 8, opts(cs.borderTopColor, 1, 0.6)));
+          });
+          svg.appendChild(rc.line(0, 26, w, 26, opts(root.getPropertyValue('--border').trim(), 1, 0.8)));
+        }
+      } else if (cl.contains('wf-pill')){
+        svg.appendChild(rc.path(rrPath(w, h, h / 2, 0.5),
+          opts(cs.borderTopColor, 1, 0.8)));
+        cl.add('wf-roughed'); drew = true;
+      } else if (cl.contains('wf-avatar')){
+        var d = Math.min(w, h) - 2;
+        svg.appendChild(rc.circle(w / 2, h / 2, d, opts(cs.backgroundColor, 1, 0.8,
+          { fill: cs.backgroundColor, fillStyle: 'hachure', hachureGap: 2.5, fillWeight: 0.7 })));
+        cl.add('wf-roughed'); drew = true;
+      }
+      // divider: rough line where the crisp border-bottom was
+      var bb = parseFloat(cs.borderBottomWidth);
+      if (bb > 0 && (cl.contains('wf-topbar') || cl.contains('wf-row') ||
+                     cl.contains('wf-tabs') || cl.contains('wf-tab'))){
+        svg.appendChild(rc.line(0, h - bb / 2, w, h - bb / 2, opts(cs.borderBottomColor, bb, 0.8)));
+        cl.add('wf-roughed-b'); drew = true;
+      }
+      // change marks: colored sketch ring just outside the element (replaces the CSS outline)
+      if (cl.contains('wf-added') || cl.contains('wf-removed')){
+        var add = cl.contains('wf-added');
+        var color = root.getPropertyValue(add ? '--add-b' : '--del-b').trim();
+        svg.appendChild(rc.path(rrPath(w, h, 6, -3),
+          opts(color, 1.5, 1, add ? {} : { strokeLineDash: [7, 4] })));
+        cl.add('wf-roughed-mark'); drew = true;
+      }
+      if (drew){ el.insertBefore(svg, el.firstChild); el.dataset.roughDone = '1'; }
+    }
+    function sketchAll(){ document.querySelectorAll(TARGETS).forEach(sketch); }
+    var resizeT;
+    function resketchAll(){
+      document.querySelectorAll('[data-rough-done]').forEach(clearSketch);
+      seed = 1; sketchAll();
+    }
+    window.addEventListener('load', sketchAll);
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeT); resizeT = setTimeout(resketchAll, 150);
+    });
+    document.querySelectorAll('#tabs button').forEach(function(b){
+      b.addEventListener('click', function(){ setTimeout(sketchAll, 0); });
+    });
+  })();
   // tabs
   document.querySelectorAll('#tabs button').forEach(function(b){
     b.addEventListener('click', function(){
