@@ -30,20 +30,22 @@ The template already points at these by absolute path.
   git diff <range>                 # the hunks
   git status --porcelain           # for the working-tree default only
   ```
+- **Scope = this session's work.** If the working tree holds pre-existing edits unrelated to the session (use the conversation to tell), exclude them: no tabs, no tree entries, no counts — just one disclosure line in the TL;DR What or overview ("excludes N pre-existing files: …"). If scope is genuinely ambiguous, state the assumption in that same line.
 
 ### 2. Read the change, don't guess it
 Read the actual hunks. Done means every changed file is accounted for. Identify:
 - **The verdict** → the `tldr` banner (see below).
 - **Key changes** → become 3–8 tabs. Group by feature/subsystem, not by file; every changed file is claimed by a tab (a residual "everything else" tab is fine).
-- **Data shape changes** → a `data-model` block with change badges for every schema/type/model change in the diff.
+- **Data shape changes** → a `data-model` block with change badges for every schema/type/model change in the diff; modified fields carry `was:` the prior value.
 - **API/route changes** → an `api-endpoint` block (method, path, request/response) for every route change in the diff.
+- **UI changes** → wireframes (see 3c). First inventory the changed surfaces from the diff: entry surface, opened interaction surface (popover/dialog/panel), resulting state (incl. empty/error), role variants when permissions change. Done means each is drawn or consciously skipped as trivial.
 - **The overall shape** → one Mermaid `Change map` diagram in the overview (only if it clarifies).
 
 ### 3. Author the recap
 1. Copy `reference/template.html` verbatim to `recaps/<YYYY-MM-DD>-<slug>.html` in the current project (create `recaps/` if missing; `<slug>` = short kebab summary; date = today).
 2. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the `<head>`, the vendored `<script>/<link>` paths, or the trailing `<script>` block.
-3. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `mermaid` diagram, `file-tree` (change badges), `diff` (`pre.vr-diff`, collapsible), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
-4. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<pre class="vr-diff" data-lang="<lang>">`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, and word-level emphasis of the changed tokens. Keep the `@@ … @@` header — the line numbers come from it. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
+3. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `wireframe` (surfaces + Before/After compare), `mermaid` diagram, `file-tree` (change badges), `diff` (`pre.vr-diff`, collapsible, split/unified), `vr-notes` (line-anchored diff callouts), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
+4. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<pre class="vr-diff" data-lang="<lang>">`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, word-level emphasis, and a side-by-side split view (the default; set `data-mode="unified"` on a genuinely narrow hunk — the reader gets a toggle either way). Keep the `@@ … @@` header — the line numbers come from it. On key files, anchor 2–4 `vr-notes` callouts to the lines that matter. Keep each tab's diff under ~150 lines; summarize the rest instead of dumping the file. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
 
 ### 3a. The TL;DR banner
 A 3-second scannable verdict at the very top, for "trust or dig in?". It is NOT a shorter Overview — it is a different shape. Fill it so:
@@ -75,9 +77,15 @@ The exact markup for all of this (`prose` class placement, `.sum`, `open`, `<b>`
 Before: "This pivotal change establishes a robust foundation, serving as the entry point for a more streamlined auth flow."
 After: "Replaces password login with token sessions. Old path deleted."
 
+### 3c. Wireframes (UI changes)
+If the diff changes rendered UI — components, styles, tokens, copy, navigation — the tab that owns it MUST open with wireframe(s); code diffs don't show what the user sees. Draw the surfaces from the step-2 inventory: a Before/After pair when comparison clarifies, after-only when the change is purely additive, a state sequence when the change is a flow. Use the smallest surface that shows it (a popover change gets a popover, not a whole page). Markup contract, surface presets, and change marks are in the template.
+
+A wireframe is a **sketch, not a screenshot**, and is half-mechanical: every label, control, and state drawn must be a string or component visible in the diff — never invent UI. Layout and sizing are inference; the caption discloses that automatically. Trivial visual changes (a typo, a comment) need none.
+
 ### 4. Grounding rules (hard)
-- **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots.
+- **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots. (Wireframes split down the middle — see 3c.)
 - **Exhaustive**: every changed file appears in the file-tree and is claimed by a tab; every schema/type and route change in the diff is carried by a block. A single block + one sentence under-serves the review.
+- **Redaction is the one sanctioned edit to a pasted hunk.** If a hunk (or any block, note, or example) carries a secret — key, token, password, webhook URL, `.env` value — replace the value alone with `•••redacted•••`, keeping the line and key name intact so the diff still reads. A recap file outlives "local-only": it gets copied, screen-shared, pasted.
 
 ### 5. Report
 Print the **absolute local file path** and tell the user to open it (double-click / `open <path>`). Do not produce a URL. Do not summarize the diff in chat — the recap is the deliverable.

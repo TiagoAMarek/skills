@@ -79,8 +79,8 @@
   pre{margin:0;overflow-x:auto} pre code{font-size:12.5px;line-height:1.5}
   .diff-stat{color:var(--muted);font-weight:400;margin-left:auto;white-space:nowrap}
   .diff-stat .a{color:var(--add-b)} .diff-stat .d{color:var(--del-b)}
-  /* rendered diff (line numbers + syntax + word-level) — built at runtime from pre.vr-diff */
-  .vr-diff-wrap{overflow-x:auto}
+  /* rendered diff (line numbers + syntax + word-level, split/unified) — built at runtime from pre.vr-diff */
+  .vr-view{overflow-x:auto}
   table.vr-diff{border-collapse:collapse;width:100%;
     font-family:var(--mono);font-size:12.5px;line-height:1.5}
   table.vr-diff td{padding:0 10px;vertical-align:top;white-space:pre}
@@ -93,6 +93,29 @@
   table.vr-diff tr.meta td{color:var(--muted);opacity:.7}
   .wd{border-radius:0;padding:0}  /* flush: adjacent .wd spans read as one continuous band */
   table.vr-diff tr.add .wd{background:#5fbf6a55} table.vr-diff tr.del .wd{background:#e5726f55}
+  /* split view: per-cell coloring (unified colors whole rows above) */
+  table.vr-diff.split{table-layout:fixed}
+  table.vr-diff.split td.code{width:50%;white-space:pre-wrap;overflow-wrap:anywhere}
+  table.vr-diff.split td.code.add,table.vr-diff.split td.ln.add{background:var(--add)}
+  table.vr-diff.split td.code.del,table.vr-diff.split td.ln.del{background:var(--del)}
+  table.vr-diff.split td.code.add .wd{background:#5fbf6a55} table.vr-diff.split td.code.del .wd{background:#e5726f55}
+  table.vr-diff.split td.lnr{border-left:1px solid var(--border)}
+  table.vr-diff td.void{background:repeating-linear-gradient(45deg,transparent,transparent 6px,#ffffff06 6px,#ffffff06 7px)}
+  /* mode toggle bar (runtime-built above each rendered diff) */
+  .vr-mode{display:flex;justify-content:flex-end;gap:6px;padding:5px 8px;background:var(--panel2);border-bottom:1px solid var(--border)}
+  .vr-mode button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);background:transparent;border:0;cursor:pointer;padding:1px 7px;border-radius:4px}
+  .vr-mode button:hover{color:var(--fg)}
+  .vr-box[data-mode="split"] .vr-mode button[data-m="split"],
+  .vr-box[data-mode="unified"] .vr-mode button[data-m="unified"]{color:var(--fg);background:var(--chip)}
+  .vr-box[data-mode="split"] .vr-view.unified{display:none}
+  .vr-box[data-mode="unified"] .vr-view.split{display:none}
+  /* diff notes: injected inline as callout rows; unmatched notes fall back to this list styling */
+  tr.noterow td{padding:2px 10px 6px;white-space:normal}
+  tr.noterow .note{margin:2px 0;font-family:var(--sans)}
+  ul.vr-notes{list-style:none;margin:8px 0;padding:0}
+  ul.vr-notes li{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:6px 0;font-size:12.5px}
+  ul.vr-notes li::before{content:"L" attr(data-line) " · ";font-family:var(--mono);color:var(--muted);font-size:11px}
   /* data-model */
   table.dm{border-collapse:collapse;width:100%;font-size:13px}
   table.dm th,table.dm td{border:1px solid var(--border);padding:6px 10px;text-align:left}
@@ -103,6 +126,7 @@
   .badge.modified{background:#d99a2b22;color:var(--mod)}
   .badge.removed{background:#e5484d22;color:var(--rm)}
   .badge.renamed{background:#b98cf022;color:var(--ren)}
+  .was{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-left:6px}
   /* api-endpoint */
   .ep{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:10px 0}
   .ep .row{display:flex;gap:10px;align-items:center;padding:9px 12px;background:var(--panel2);
@@ -122,6 +146,53 @@
   /* annotated code note */
   .note{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:8px 0;
     font-size:12.5px;color:var(--fg)}
+  /* ---- wireframe kit (.wf-*): a sketch of the UI, never a screenshot ---- */
+  .wf-fig{margin:12px 0}
+  .wf-caption{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
+  .wf-caption::after{content:" · layout inferred from code, not a screenshot";opacity:.8}
+  /* compare pairs: narrow surfaces sit side by side; browser frames auto-stack (too wide to halve) */
+  .wf-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .wf-compare:has(.wf-screen[data-surface="browser"]){grid-template-columns:1fr}
+  @media (max-width:700px){.wf-compare{grid-template-columns:1fr}}
+  .wf-side::before{content:attr(data-label);display:block;font-family:var(--mono);font-size:11px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+  /* surfaces */
+  .wf-screen{background:var(--panel2);border:1px solid var(--rule);border-radius:10px;padding:12px;
+    font-family:var(--sans);font-size:12.5px;color:var(--fg)}
+  .wf-screen[data-surface="browser"]{padding-top:0;border-radius:8px}
+  .wf-screen[data-surface="browser"]::before{content:"";display:block;height:26px;margin:0 -12px 10px;
+    border-bottom:1px solid var(--border);background:
+     radial-gradient(circle 4px at 16px 13px,var(--rule) 4px,transparent 5px),
+     radial-gradient(circle 4px at 30px 13px,var(--rule) 4px,transparent 5px),
+     radial-gradient(circle 4px at 44px 13px,var(--rule) 4px,transparent 5px)}
+  .wf-screen[data-surface="phone"]{max-width:280px;margin:0 auto;border-radius:22px;border-width:2px;padding:14px 12px}
+  .wf-screen[data-surface="dialog"]{max-width:420px;margin:0 auto;border-radius:12px;box-shadow:0 12px 40px #00000066}
+  .wf-screen[data-surface="popover"]{max-width:300px;border-radius:8px;position:relative;margin-top:6px;
+    box-shadow:0 8px 24px #00000055}
+  .wf-screen[data-surface="popover"]::before{content:"";position:absolute;top:-5px;left:24px;width:9px;height:9px;
+    background:var(--panel2);border-left:1px solid var(--rule);border-top:1px solid var(--rule);transform:rotate(45deg)}
+  .wf-screen[data-surface="panel"]{max-width:340px;margin-left:auto;min-height:200px;
+    border-radius:8px 0 0 8px;border-right:0;box-shadow:-8px 0 24px #00000044}
+  /* primitives */
+  .wf-topbar{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+  .wf-title{font-weight:600}
+  .wf-spacer{flex:1}
+  .wf-btn{border:1px solid var(--rule);border-radius:6px;padding:2px 10px;background:transparent;
+    color:var(--fg);font:inherit;font-size:12px}
+  .wf-btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .wf-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+  .wf-row:last-child{border-bottom:0}
+  .wf-input{border:1px solid var(--rule);border-radius:6px;padding:4px 8px;color:var(--muted)}
+  .wf-pill{border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:11px;color:var(--muted)}
+  .wf-avatar{width:18px;height:18px;border-radius:50%;background:var(--rule);flex:none}
+  .wf-bar{display:inline-block;height:8px;border-radius:4px;background:var(--chip);vertical-align:middle}
+  .wf-muted{color:var(--muted)}
+  .wf-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .wf-tab{padding:3px 10px;font-size:12px;color:var(--muted)}
+  .wf-tab.on{color:var(--fg);border-bottom:2px solid var(--fg)}
+  /* change marks: what THIS diff added/removed inside the sketch */
+  .wf-added{outline:1.5px solid var(--add-b);outline-offset:2px;border-radius:6px}
+  .wf-removed{outline:1.5px dashed var(--del-b);outline-offset:2px;border-radius:6px;opacity:.75}
   .mermaid{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;
     text-align:center;margin:10px 0}
   code.inline{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:var(--mono)}
@@ -235,10 +306,44 @@ graph LR
     <section class="card">
       <p class="prose">One sentence framing this change. Why it matters for review.</p>
 
+      <!-- WIREFRAME block (UI changes only — see SKILL.md "Wireframes"). Opens the tab that owns the
+           UI change, BEFORE any diff. A sketch, not a screenshot: every label, control, and state you
+           draw must be a string/component visible in the diff; layout is inference — the caption
+           discloses that automatically, just write what the wireframe shows.
+           Surfaces: data-surface="browser" | "phone" | "dialog" | "popover" | "panel" (omit = bare card).
+           Compare pair: .wf-compare > .wf-side[data-label="Before"|"After"]. Narrow surfaces render
+           side by side; browser frames auto-stack. After-only change: drop .wf-compare, keep .wf-fig.
+           Mark what the diff added/removed with .wf-added / .wf-removed on the element. -->
+      <h3 class="blk">UI — share popover</h3>
+      <figure class="wf-fig">
+        <div class="wf-compare">
+          <div class="wf-side" data-label="Before">
+            <div class="wf-screen" data-surface="popover">
+              <div class="wf-topbar"><span class="wf-title">Share</span></div>
+              <div class="wf-row"><span class="wf-avatar"></span><span>alice@acme.com</span>
+                <span class="wf-spacer"></span><span class="wf-pill">Owner</span></div>
+              <div class="wf-row wf-removed"><span class="wf-muted">Anyone with the link</span></div>
+            </div>
+          </div>
+          <div class="wf-side" data-label="After">
+            <div class="wf-screen" data-surface="popover">
+              <div class="wf-topbar"><span class="wf-title">Share</span><span class="wf-spacer"></span>
+                <button class="wf-btn primary wf-added">Copy link</button></div>
+              <div class="wf-row"><span class="wf-avatar"></span><span>alice@acme.com</span>
+                <span class="wf-spacer"></span><span class="wf-pill">Owner</span></div>
+              <div class="wf-row wf-added"><span>Org members</span>
+                <span class="wf-spacer"></span><span class="wf-pill">can view</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="wf-caption">Share popover: link sharing replaced by org-scoped access</figcaption>
+      </figure>
+
       <!-- DIFF block: paste the RAW unified git hunk into pre.vr-diff, set data-lang from the file ext.
-           The runtime renderer adds line numbers, per-line syntax colors, and word-level emphasis.
-           Do NOT hand-author highlighting. Collapse by DEFAULT (no `open`) and put a plain-language
-           `.sum` phrase in the summary so it can be read without expanding. -->
+           The runtime renderer adds line numbers, per-line syntax colors, word-level emphasis, and a
+           side-by-side split view (default, with a per-diff unified toggle; set data-mode="unified"
+           on a genuinely narrow hunk). Do NOT hand-author highlighting. Collapse by DEFAULT (no `open`)
+           and put a plain-language `.sum` phrase in the summary so it can be read without expanding. -->
       <h3 class="blk">Diff — src/auth.ts</h3>
       <details class="fold">
         <summary>src/auth.ts <span class="sum">— login becomes async, verifies hash</span>
@@ -253,6 +358,15 @@ graph LR
 +  return verify(p, user.hash)
  }
 </pre>
+
+          <!-- DIFF NOTES (key files only): 2–4 high-signal callouts anchored to the hunk's line
+               numbers. data-line = new-side number; data-side="before" anchors a removed line.
+               The runtime injects each note inline at its line; an unmatched note falls back to
+               rendering below the diff with an L<n> badge — never silently dropped. -->
+          <ul class="vr-notes">
+            <li data-line="3">Missing user now fails before the hash compare is reachable.</li>
+            <li data-line="2" data-side="before">Sync <code class="inline">db.check</code> path deleted.</li>
+          </ul>
         </div>
       </details>
 
@@ -271,12 +385,14 @@ graph LR
     <section class="card">
       <p class="prose">What changed in the data shape.</p>
       <h3 class="blk">Data model — Session</h3>
+      <!-- On modified fields/params, span.was carries the prior value from the diff
+           ("from what?" without opening the hunk). Works beside any badge. -->
       <div class="dm-wrap">
       <table class="dm">
         <tr><th>Field</th><th>Type</th><th>Change</th></tr>
         <tr><td>id</td><td>uuid</td><td></td></tr>
         <tr><td>refreshToken</td><td>string</td><td><span class="badge added">added</span></td></tr>
-        <tr><td>expiresAt</td><td>Date</td><td><span class="badge modified">modified</span></td></tr>
+        <tr><td>expiresAt</td><td>Date</td><td><span class="badge modified">modified</span><span class="was">was: string</span></td></tr>
         <tr><td>legacyKey</td><td>string</td><td><span class="badge removed">removed</span></td></tr>
       </table>
       </div>
@@ -397,19 +513,73 @@ graph LR
           k=a-1;
         }
       }
-      var html='<div class="vr-diff-wrap"><table class="vr-diff"><tbody>';
+      function rowAttrs(o,n){return (o?' data-o="'+o+'"':'')+(n?' data-n="'+n+'"':'');}
+      // unified view
+      var uni='<table class="vr-diff"><tbody>';
       rows.forEach(function(r){
         if(r.t==='hunk'||r.t==='meta'){
-          html+='<tr class="'+r.t+'"><td class="ln"></td><td class="ln"></td><td class="code">'+esc(r.text)+'</td></tr>';
+          uni+='<tr class="'+r.t+'"><td class="ln"></td><td class="ln"></td><td class="code">'+esc(r.text)+'</td></tr>';
         }else{
-          var body=codeHtml(r.text,lang,r.r||[]);
-          html+='<tr class="'+r.t+'"><td class="ln">'+(r.o||'')+'</td><td class="ln">'+(r.n||'')+
-                 '</td><td class="code">'+body+'</td></tr>';
+          uni+='<tr class="'+r.t+'"'+rowAttrs(r.o,r.n)+'><td class="ln">'+(r.o||'')+'</td><td class="ln">'+(r.n||'')+
+                 '</td><td class="code">'+codeHtml(r.text,lang,r.r||[])+'</td></tr>';
         }
       });
-      html+='</tbody></table></div>';
-      var wrap=document.createElement('div');wrap.innerHTML=html;
-      pre.replaceWith(wrap.firstChild);
+      uni+='</tbody></table>';
+      // split view: ctx mirrors both sides; del-runs face their paired add-runs
+      var srows=[];
+      for(k=0;k<rows.length;k++){
+        var row=rows[k];
+        if(row.t==='hunk'||row.t==='meta'){srows.push(row);continue;}
+        if(row.t==='ctx'){srows.push({l:{no:row.o,text:row.text,cls:'ctx'},r:{no:row.n,text:row.text,cls:'ctx'}});continue;}
+        var d=k;while(d<rows.length&&rows[d].t==='del')d++;
+        var a=d;while(a<rows.length&&rows[a].t==='add')a++;
+        var dels=rows.slice(k,d),adds=rows.slice(d,a),m=Math.max(dels.length,adds.length),p;
+        for(p=0;p<m;p++)srows.push({
+          l:dels[p]?{no:dels[p].o,text:dels[p].text,cls:'del',w:dels[p].r}:null,
+          r:adds[p]?{no:adds[p].n,text:adds[p].text,cls:'add',w:adds[p].r}:null});
+        k=a-1;
+      }
+      function sCell(s,right){
+        if(!s)return '<td class="ln void'+(right?' lnr':'')+'"></td><td class="code void"></td>';
+        return '<td class="ln '+s.cls+(right?' lnr':'')+'">'+(s.no||'')+'</td>'+
+               '<td class="code '+s.cls+'">'+codeHtml(s.text,lang,s.w||[])+'</td>';
+      }
+      var spl='<table class="vr-diff split"><tbody>';
+      srows.forEach(function(r){
+        if(r.t==='hunk'||r.t==='meta'){
+          spl+='<tr class="'+r.t+'"><td class="ln"></td><td class="code" colspan="3">'+esc(r.text)+'</td></tr>';
+        }else{
+          spl+='<tr'+rowAttrs(r.l&&r.l.no,r.r&&r.r.no)+'>'+sCell(r.l,false)+sCell(r.r,true)+'</tr>';
+        }
+      });
+      spl+='</tbody></table>';
+      var mode=pre.getAttribute('data-mode')==='unified'?'unified':'split';
+      var box=document.createElement('div');box.className='vr-box';box.setAttribute('data-mode',mode);
+      box.innerHTML='<div class="vr-mode"><button type="button" data-m="split">split</button>'+
+        '<button type="button" data-m="unified">unified</button></div>'+
+        '<div class="vr-view split">'+spl+'</div><div class="vr-view unified">'+uni+'</div>';
+      pre.replaceWith(box);
+      box.querySelectorAll('.vr-mode button').forEach(function(b){
+        b.addEventListener('click',function(){box.setAttribute('data-mode',b.dataset.m);});
+      });
+      // diff notes: anchor each li of a following ul.vr-notes inline into both views;
+      // unmatched notes stay in the ul as a visible fallback list (never silently dropped)
+      var notes=box.nextElementSibling;
+      if(notes&&notes.classList&&notes.classList.contains('vr-notes')){
+        Array.prototype.slice.call(notes.children).forEach(function(li){
+          var n=li.getAttribute('data-line'),
+              attr=li.getAttribute('data-side')==='before'?'data-o':'data-n',hit=false;
+          box.querySelectorAll('table.vr-diff').forEach(function(tb){
+            var tr=tb.querySelector('tr['+attr+'="'+n+'"]');
+            if(!tr)return;
+            var nr=document.createElement('tr');nr.className='noterow';
+            nr.innerHTML='<td colspan="'+(tb.classList.contains('split')?4:3)+'"><div class="note">'+li.innerHTML+'</div></td>';
+            tr.parentNode.insertBefore(nr,tr.nextSibling);hit=true;
+          });
+          if(hit)li.remove();
+        });
+        if(!notes.children.length)notes.remove();
+      }
     }
     document.querySelectorAll('pre.vr-diff').forEach(function(pre){
       try{render(pre);}
