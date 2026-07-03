@@ -1,12 +1,15 @@
 <!--
   visual-recap TEMPLATE — copy this whole file to recaps/<YYYY-MM-DD>-<slug>.html and slot-fill.
   Rules:
-    - Do NOT change the <head>, the vendored <script>/<link> paths, or the trailing <script> block.
+    - Vendored libs are referenced by ABSOLUTE file:// path (the <link> below, plus two <script> tags
+      near the end) so any recap in any project resolves them. This path is only correct for the
+      machine/location it was authored on — resolve it against this skill's real on-disk path (skill
+      folders can be symlinked between .claude/skills/ and .agents/skills/) before trusting it.
+    - Do NOT change anything else in the <head>, or the trailing <script> block.
     - Fill: <title>, the header meta, the .overview, the .tabs buttons, and the .tab-panel sections.
     - Every block below is a COPYABLE example. Delete the ones you don't need; duplicate the ones you do.
     - Put class="prose" on prose YOU author (verdict what, checks, overview, tab intros) — it gets the
       readable measure and the bionic-reading toggle. Never put it on code, labels, or headings.
-    - Vendored libs are referenced by ABSOLUTE file:// path so any recap in any project resolves them.
     - GROUNDING: every structured block must derive mechanically from the real diff. Inferences go in prose only.
 -->
 <meta charset="utf-8">

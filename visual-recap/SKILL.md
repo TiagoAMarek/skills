@@ -1,6 +1,6 @@
 ---
 name: visual-recap
-description: Turn a local git diff (working tree, branch, or commit range) into an offline interactive HTML recap for verifying what was built. Use when the user wants a recap of a session's changes, to review or verify what the agent built, or to visually inspect a branch or commit range.
+description: Recap a local git diff as an interactive offline HTML page. Use when the user wants to verify what an agent session built, or to visually inspect a branch or commit range.
 ---
 
 # visual-recap (offline)
@@ -8,10 +8,10 @@ description: Turn a local git diff (working tree, branch, or commit range) into 
 Produce a single local HTML file that makes a change set reviewable at a glance: **"did the agent build what I think it built?"** The reader is you, on this machine, right after a session.
 
 ## What this is NOT
-- No shareable/hosted links, no localhost server/bridge — never publish, never call the network at runtime.
+- No shareable/hosted links, no localhost server/bridge — never publish, never fetch (while authoring or at runtime).
 - No MDX, no React, no build step. Output is plain HTML that references two **vendored** libs by absolute `file://` path.
 
-## Vendored runtime (already on disk — do not fetch)
+## Vendored runtime (already on disk)
 - `vendor/mermaid.min.js` — diagrams
 - `vendor/highlight.min.js` + `vendor/highlight-theme.css` — syntax highlighting
 The template already points at these by absolute path.
@@ -43,9 +43,10 @@ Read the actual hunks. Done means every changed file is accounted for. Identify:
 
 ### 3. Author the recap
 1. Copy `reference/template.html` verbatim to `recaps/<YYYY-MM-DD>-<slug>.html` in the current project (create `recaps/` if missing; `<slug>` = short kebab summary; date = today).
-2. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the `<head>`, the vendored `<script>/<link>` paths, or the trailing `<script>` block.
-3. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `wireframe` (surfaces + Before/After compare), `mermaid` diagram, `file-tree` (change badges), `diff` (`pre.vr-diff`, collapsible, split/unified), `vr-notes` (line-anchored diff callouts), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
-4. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<pre class="vr-diff" data-lang="<lang>">`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, word-level emphasis, and a side-by-side split view (the default; set `data-mode="unified"` on a genuinely narrow hunk — the reader gets a toggle either way). Keep the `@@ … @@` header — the line numbers come from it. On key files, anchor 2–4 `vr-notes` callouts to the lines that matter. Keep each tab's diff under ~150 lines; summarize the rest instead of dumping the file. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
+2. **Resolve the vendor path before touching anything else.** Skill folders are sometimes a real directory under `.claude/skills/`, sometimes a symlink to `.agents/skills/`. Run `realpath` (or equivalent) on this skill's own directory to get the true on-disk path, then check the `vendor/` `file://` paths already in the copied file (the `<link>` and the two `<script>` tags) against it — if the resolved path differs, rewrite those three paths to match. Do this once per machine/project; don't assume the path baked into the template is still correct.
+3. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the rest of the `<head>`, or the trailing `<script>` block.
+4. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `wireframe` (surfaces + Before/After compare), `mermaid` diagram, `file-tree` (change badges), `diff` (`pre.vr-diff`, collapsible, split/unified), `vr-notes` (line-anchored diff callouts), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
+5. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<pre class="vr-diff" data-lang="<lang>">`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, word-level emphasis, and a side-by-side split view (the default; set `data-mode="unified"` on a genuinely narrow hunk — the reader gets a toggle either way). Keep the `@@ … @@` header — the line numbers come from it. On key files, anchor 2–4 `vr-notes` callouts to the lines that matter. Keep each tab's diff under ~150 lines; summarize the rest instead of dumping the file. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
 
 ### 3a. The TL;DR banner
 A 3-second scannable verdict at the very top, for "trust or dig in?". It is NOT a shorter Overview — it is a different shape. Fill it so:
@@ -84,7 +85,7 @@ A wireframe is a **sketch, not a screenshot**, and is half-mechanical: every lab
 
 ### 4. Grounding rules (hard)
 - **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots. (Wireframes split down the middle — see 3c.)
-- **Exhaustive**: every changed file appears in the file-tree and is claimed by a tab; every schema/type and route change in the diff is carried by a block. A single block + one sentence under-serves the review.
+- **Exhaustive**: everything the step-2 read identified lands in the recap — files in the tree and tabs, schema/type and route changes in blocks. A single block + one sentence under-serves the review.
 - **Redaction is the one sanctioned edit to a pasted hunk.** If a hunk (or any block, note, or example) carries a secret — key, token, password, webhook URL, `.env` value — replace the value alone with `•••redacted•••`, keeping the line and key name intact so the diff still reads. A recap file outlives "local-only": it gets copied, screen-shared, pasted.
 
 ### 5. Report
