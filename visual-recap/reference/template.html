@@ -544,7 +544,12 @@ graph LR
         return '<td class="ln '+s.cls+(right?' lnr':'')+'">'+(s.no||'')+'</td>'+
                '<td class="code '+s.cls+'">'+codeHtml(s.text,lang,s.w||[])+'</td>';
       }
-      var spl='<table class="vr-diff split"><tbody>';
+      // colgroup pins the 4 columns: table-layout:fixed otherwise sizes them from the first
+      // row, which is the colspan'd hunk header — that split the code width evenly across
+      // cols 2-4 and broke the 50/50 layout. Gutter width tracks the widest line number.
+      var gw=Math.max(2,String(Math.max(oldNo,newNo)).length)*8+16;
+      var spl='<table class="vr-diff split"><colgroup><col style="width:'+gw+'px"><col style="width:50%">'+
+        '<col style="width:'+gw+'px"><col style="width:50%"></colgroup><tbody>';
       srows.forEach(function(r){
         if(r.t==='hunk'||r.t==='meta'){
           spl+='<tr class="'+r.t+'"><td class="ln"></td><td class="code" colspan="3">'+esc(r.text)+'</td></tr>';
