@@ -1,21 +1,20 @@
 ---
 name: visual-recap
-description: Turn a local git diff (working tree, branch, or commit range) into an offline interactive HTML recap — annotated diffs, data-model/API summaries, file map, and diagrams — for verifying what was built. Fully offline; no shareable links, no CI, no MDX.
+description: Turn a local git diff (working tree, branch, or commit range) into an offline interactive HTML recap for verifying what was built. Use when the user wants a recap of a session's changes, to review or verify what the agent built, or to visually inspect a branch or commit range.
 ---
 
 # visual-recap (offline)
 
-Produce a single local HTML file that makes a change set reviewable at a glance: **"did the agent build what I think it built?"** The reader is you, on this machine, right after a session. Never publish, never link, never call the network at runtime.
+Produce a single local HTML file that makes a change set reviewable at a glance: **"did the agent build what I think it built?"** The reader is you, on this machine, right after a session.
 
 ## What this is NOT
-- No shareable/hosted links, no Plan MCP, no localhost server/bridge.
-- No GitHub Action.
+- No shareable/hosted links, no localhost server/bridge — never publish, never call the network at runtime.
 - No MDX, no React, no build step. Output is plain HTML that references two **vendored** libs by absolute `file://` path.
 
 ## Vendored runtime (already on disk — do not fetch)
 - `vendor/mermaid.min.js` — diagrams
 - `vendor/highlight.min.js` + `vendor/highlight-theme.css` — syntax highlighting
-The template already points at these by absolute path. Runtime is 100% offline.
+The template already points at these by absolute path.
 
 ## Workflow
 
@@ -33,11 +32,11 @@ The template already points at these by absolute path. Runtime is 100% offline.
   ```
 
 ### 2. Read the change, don't guess it
-Skim the actual hunks. Identify:
+Read the actual hunks. Done means every changed file is accounted for. Identify:
 - **The verdict** → the `tldr` banner (see below).
-- **Key changes** → become 3–8 tabs. Group by feature/subsystem, not by file.
-- **Data shape changes** (schemas, types, models) → `data-model` blocks with change badges.
-- **API/route changes** (methods, paths, request/response) → `api-endpoint` blocks.
+- **Key changes** → become 3–8 tabs. Group by feature/subsystem, not by file; every changed file is claimed by a tab (a residual "everything else" tab is fine).
+- **Data shape changes** → a `data-model` block with change badges for every schema/type/model change in the diff.
+- **API/route changes** → an `api-endpoint` block (method, path, request/response) for every route change in the diff.
 - **The overall shape** → one Mermaid `Change map` diagram in the overview (only if it clarifies).
 
 ### 3. Author the recap
@@ -49,8 +48,8 @@ Skim the actual hunks. Identify:
 ### 3a. The TL;DR banner
 A 3-second scannable verdict at the very top, for "trust or dig in?". It is NOT a shorter Overview — it is a different shape. Fill it so:
 - **What** (`.what`): one plain line — mechanical, the scope of the diff.
-- **Check** (2–3 `<li>`): JUDGMENT — the highest-value things to look at first, each naming a file/tab. This is inference and belongs here (the banner is a declared judgment block).
-- **Facts row**: `N files`, `+added`/`−removed` (mechanical), then **Tests** — mechanical: did the diff add/modify test files? `ok "Tests ✅ present"` / `warn "⚠️ partial"` / `none "❌ none"`. Then **Risk** — a judgment cue: `risk-low|risk-med|risk-high`.
+- **Check** (2–3 `<li>`): judgment — the highest-value things to look at first, each naming a file/tab.
+- **Facts row**: `N files`, `+added`/`−removed` (mechanical), then **Tests** — mechanical: did the diff add/modify test files? `ok "Tests ✅ present"` / `warn "⚠️ partial"` / `none "❌ none"`. Then **Risk** — judgment: `risk-low|risk-med|risk-high`.
 - Keep it tight; if there's nothing worth checking, say so rather than padding.
 
 ### 3b. Prose voice (generated text only)
@@ -67,18 +66,18 @@ Write plain and direct. State what changed and what to check. No warm-up, no sig
 Keep the structure. Bullets stay bullets; do not melt the TL;DR or Check list into a paragraph. Short fragments are fine in the verdict.
 
 **Chunk for fast intake (the reader has ADHD).** Write for a 10-second entry layer, detail on demand:
-- The **Overview** is a `<ul class="overview prose">` of **max ~3 bullets, one idea each**, with the single key term wrapped in `<b>` as an eye-anchor. No paragraphs.
-- **Tab intros** are **one short sentence** (`<p class="prose">`), not a paragraph.
-- Put `class="prose"` on prose you author (overview, verdict what, checks, tab intros) — it gets the readable measure and the bionic-reading toggle. Never put it on code or labels.
-- **Diffs collapse by DEFAULT** (no `open` on `details.fold`) and every diff summary carries a plain-language `<span class="sum">— what changed</span>` so it can be judged without expanding. Leave a diff open only if the verdict tells the reader to look there first.
+- The **Overview** is **max ~3 bullets, one idea each**. No paragraphs.
+- **Tab intros** are **one short sentence**, not a paragraph.
+- **Diffs collapse by default**, each summary carrying a plain-language "what changed" phrase so it can be judged without expanding. Leave a diff open only if the verdict tells the reader to look there first.
+
+The exact markup for all of this (`prose` class placement, `.sum`, `open`, `<b>` eye-anchors) is annotated in the template beside each block.
 
 Before: "This pivotal change establishes a robust foundation, serving as the entry point for a more streamlined auth flow."
 After: "Replaces password login with token sessions. Old path deleted."
 
 ### 4. Grounding rules (hard)
-- Every **structured block** must derive mechanically from the real diff. If the diff doesn't contain a fact, omit the block — do not invent fields, endpoints, or params.
-- **Inferences, intent, and risk live only in prose** (`.overview` / tab framing text).
-- Aim substantial: 3–8 key-change tabs with a file map and focused diffs. A single block + one sentence under-serves the review.
+- **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots.
+- **Exhaustive**: every changed file appears in the file-tree and is claimed by a tab; every schema/type and route change in the diff is carried by a block. A single block + one sentence under-serves the review.
 
 ### 5. Report
 Print the **absolute local file path** and tell the user to open it (double-click / `open <path>`). Do not produce a URL. Do not summarize the diff in chat — the recap is the deliverable.
