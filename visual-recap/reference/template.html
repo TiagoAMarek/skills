@@ -120,12 +120,10 @@ graph LR
 }
 </code></pre>
 
-      <!-- DIFF block: paste the RAW unified git hunk into script.vr-diff (type=text/plain), set data-lang
-           from the file ext. script blocks keep JSX/HTML in hunks from breaking the page DOM.
-           The runtime renderer adds line numbers, per-line syntax colors, word-level emphasis, and a
-           side-by-side split view (default, with a per-diff unified toggle; set data-mode="unified"
-           on a genuinely narrow hunk). Do NOT hand-author highlighting. Collapse by DEFAULT (no `open`)
-           and put a plain-language `.sum` phrase in the summary so it can be read without expanding. -->
+      <!-- DIFF block: run extract-hunk.sh and paste stdout into script.vr-diff (type=text/plain).
+           Never hand-type hunk bodies or HTML-escape (&lt;, &amp;) inside the script block.
+           See SKILL.md §3 step 5 and §3e. Collapse by DEFAULT (no `open`); put a plain-language
+           `.sum` phrase in the summary so it can be read without expanding. -->
       <h3 class="blk">Diff — src/auth.ts</h3>
       <details class="fold">
         <summary>src/auth.ts <span class="sum">— login becomes async, verifies hash</span>

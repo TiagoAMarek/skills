@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify-recap.sh — fail if a recap drifted from the externalized runtime contract
+# verify-recap.sh — markup drift + vr-diff hunk lint (hard gate before delivery)
 set -euo pipefail
 
 RECAP="${1:?usage: verify-recap.sh <recap.html>}"
@@ -38,6 +38,11 @@ while IFS= read -r path; do
 done < <(grep -oE 'file://[^"'\'' ]+' "$RECAP" || true)
 
 if [[ "$ERR" -ne 0 ]]; then
+  exit 1
+fi
+
+# Hunk structural lint (hard fail)
+if ! "$SKILL_DIR/scripts/lint-hunks.sh" "$RECAP"; then
   exit 1
 fi
 

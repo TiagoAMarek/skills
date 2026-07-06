@@ -22,6 +22,11 @@ The template references these by absolute `file://` path.
 
 ### 1. Resolve the diff source
 - If the user passed an explicit **commit SHA or `A..B` range**, use it.
+- If the user named a **pull request** (e.g. "PR 274"), resolve the range in this order:
+  1. `gh pr view <n> --json headRefName,baseRefName` (add `-R org/repo` when not in the repo root).
+  2. If `gh` fails: inspect `git branch -vv` and upstream tracking for a likely PR head branch.
+  3. If still ambiguous: ask the user for branch name or commit range. Do not silently guess across unrelated local edits.
+  4. When inference was used, add one disclosure line in the TL;DR **What** (e.g. "Assumed PR 274 = feat/taxonomy vs master (gh unreachable).").
 - Otherwise default to **working tree + committed work vs base branch**:
   - Base = `main` if it exists, else `master` (or whatever the user names).
   - Committed: `git diff <base>...HEAD`
@@ -48,7 +53,17 @@ Read the actual hunks. Done means every changed file is accounted for. Identify:
 2. **Resolve the vendor path before touching anything else.** Skill folders are sometimes a real directory under `.claude/skills/`, sometimes a symlink to `.agents/skills/`. Run `realpath` (or equivalent) on this skill's own directory to get the true on-disk path, then rewrite **every** vendored `file://` path in the copied file — two `<link>` tags (`highlight-theme.css`, `recap-chrome.css`) and three `<script>` tags (`highlight.min.js`, `mermaid.min.js`, `recap-runtime.js`) — if the resolved path differs. Do this once per machine/project; don't assume the path baked into the template is still correct.
 3. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the vendored `<link>` / `<script src>` tags. **Never add inline `<style>` or inline runtime `<script>`** — chrome and runtime logic must stay in `vendor/recap-chrome.css` and `vendor/recap-runtime.js` so recaps cannot drift.
 4. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `mermaid` diagram, `file-tree` (change badges), `diff` (`script.vr-diff`, collapsible, split/unified), `vr-notes` (line-anchored diff callouts), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
-5. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<script type="text/plain" class="vr-diff" data-lang="<lang>">…</script>`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Use `script` (not `pre`) so JSX/HTML tags in the hunk cannot break the page DOM. Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, word-level emphasis, and a side-by-side split view (the default; set `data-mode="unified"` on a genuinely narrow hunk — the reader gets a toggle either way). Keep the `@@ … @@` header — the line numbers come from it. On key files, anchor 2–4 `vr-notes` callouts to the lines that matter; use `was:` in the note text when a label was replaced. Keep each tab's diff under ~150 lines; summarize the rest instead of dumping the file. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
+5. **Diffs** — hard gate: **never hand-type hunk bodies.** Every `vr-diff` block must come from `git diff` output via `scripts/extract-hunk.sh` (run from the target git repo):
+   ```
+   <skill-dir>/scripts/extract-hunk.sh <range> -- <path>
+   <skill-dir>/scripts/extract-hunk.sh <range> -- <path> <start-line> <end-line>   # new-side slice
+   ```
+   Paste stdout verbatim into `<script type="text/plain" class="vr-diff" data-lang="<lang>">…</script>`. Set `data-lang` from the file extension (`typescript`, `tsx`, `python`, `json`, …). Use `script` (not `pre`) so JSX/HTML tags in the hunk cannot break the page DOM. Do NOT hand-author highlighting or line markup.
+   - **Truncation**: cut only at hunk boundaries or with `extract-hunk.sh` line slices. Never rewrite, paraphrase, or insert placeholder comments (`// ...`) inside a hunk.
+   - **New files** (`added` in `--stat`): hunks use `@@ -0,0 +start,count @@` and every body line starts with `+`. Never use modified-file headers (`@@ -N,M +N,M @@`) on added files.
+   - **Large new files**: prefer a contiguous slice (`extract-hunk.sh` with start/end). Cap ~80 lines per block; split into two collapsed `vr-diff` blocks or use `annotated-code` for narrative-only walkthroughs.
+   - **No HTML escaping** inside `vr-diff`: paste raw `&&`, `<`, `>` — the `type="text/plain"` wrapper isolates the DOM. Never `&amp;`, `&lt;`, `&gt;`.
+   - The runtime adds line numbers, syntax colors, word emphasis, and split/unified toggle. Keep the `@@ … @@` header. Anchor 2–4 `vr-notes` to **new-side** line numbers inside the hunk. Redaction (`•••redacted•••`) is the only other permitted edit.
 
 ### 3a. The TL;DR banner
 A 3-second scannable verdict at the very top, for "trust or dig in?". It is NOT a shorter Overview — it is a different shape. Fill it so:
@@ -89,12 +104,21 @@ Follow with **annotated-code** on the resulting component: every label, control,
 
 **Before/After without a second block:** tab-intro bullets carry the string-level delta. Add a second annotated-code block only when the diff deletes one component file and adds a separate replacement file.
 
+### 3e. Extract hunks (mandatory before paste)
+From the project git root:
+```bash
+SKILL="$(realpath <skill-dir>)"
+$SKILL/scripts/extract-hunk.sh master...HEAD -- path/to/file.ts
+$SKILL/scripts/extract-hunk.sh master...HEAD -- path/to/file.tsx 79 149
+```
+If `extract-hunk.sh` exits non-zero, the path is not in the range — do not fabricate a hunk.
+
 ### 3d. Verify before delivery (hard gate)
-You **must** run the drift checker and it **must** pass before you report the file path:
+You **must** run the verifier and it **must** pass before you report the file path:
 ```
 <skill-dir>/scripts/verify-recap.sh recaps/<YYYY-MM-DD>-<slug>.html
 ```
-Only report the recap when the output is `verify-recap: OK`. If it fails, fix the recap (usually: remove inline `<style>` / runtime `<script>`, restore vendor links) and re-run until green.
+`verify-recap.sh` checks markup drift **and** runs `lint-hunks.sh` on every `vr-diff` (prefixes, `@@` counts, new-file format, no HTML entities, `vr-notes` line range). Only report the recap when the output is `verify-recap: OK`. If it fails, re-extract hunks with `extract-hunk.sh` or fix markup — do not weaken the linter.
 
 ### 4. Grounding rules (hard)
 - **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots. Annotated-code strings and surface-inventory bullets must still come from the diff.
@@ -108,3 +132,4 @@ Only report the recap when the output is `verify-recap: OK`. If it fails, fix th
 ## Notes
 - `recaps/` is per-project and safe to `.gitignore`. The vendored libs live once in this skill dir, so recaps stay small.
 - If a diff is enormous, prefer more tabs with tighter, collapsed diffs over one giant dump.
+- Helper scripts in `scripts/`: `extract-hunk.sh` (git → paste-ready hunks), `lint-hunks.sh` (structural vr-diff checks), `verify-recap.sh` (markup drift + hunk lint).
