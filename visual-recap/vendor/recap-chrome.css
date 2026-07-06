@@ -133,69 +133,6 @@ ul.tree li{padding:2px 0}
 /* annotated code note */
 .note{border-left:2px solid var(--rule);background:#ffffff08;padding:6px 10px;margin:8px 0;
   font-size:12.5px;color:var(--fg)}
-/* ---- wireframe kit (.wf-*): a sketch of the UI, never a screenshot ---- */
-/* Excalifont (OFL, vendored): the hand-drawn voice of the sketch. Applies INSIDE .wf-screen only;
-   captions and Before/After labels stay mono (document furniture, not the drawing). */
-@font-face{font-family:'Excalifont';
-  src:url('Excalifont-Regular.woff2') format('woff2')}
-.wf-fig{margin:12px 0}
-.wf-caption{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
-.wf-caption::after{content:" · layout inferred from code, not a screenshot";opacity:.8}
-/* compare pairs: narrow surfaces sit side by side; browser frames auto-stack (too wide to halve) */
-.wf-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
-.wf-compare:has(.wf-screen[data-surface="browser"]){grid-template-columns:1fr}
-@media (max-width:700px){.wf-compare{grid-template-columns:1fr}}
-.wf-side::before{content:attr(data-label);display:block;font-family:var(--mono);font-size:11px;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
-/* surfaces */
-.wf-screen{background:var(--panel2);border:1px solid var(--rule);border-radius:10px;padding:12px;
-  font-family:'Excalifont','Comic Sans MS',cursive;font-size:13.5px;color:var(--fg)}
-.wf-screen[data-surface="browser"]{padding-top:0;border-radius:8px}
-.wf-screen[data-surface="browser"]::before{content:"";display:block;height:26px;margin:0 -12px 10px;
-  border-bottom:1px solid var(--border);background:
-   radial-gradient(circle 4px at 16px 13px,var(--rule) 4px,transparent 5px),
-   radial-gradient(circle 4px at 30px 13px,var(--rule) 4px,transparent 5px),
-   radial-gradient(circle 4px at 44px 13px,var(--rule) 4px,transparent 5px)}
-.wf-screen[data-surface="phone"]{max-width:280px;margin:0 auto;border-radius:22px;border-width:2px;padding:14px 12px}
-.wf-screen[data-surface="dialog"]{max-width:420px;margin:0 auto;border-radius:12px}
-.wf-screen[data-surface="popover"]{max-width:300px;border-radius:8px;position:relative;margin-top:6px}
-.wf-screen[data-surface="panel"]{max-width:340px;margin-left:auto;min-height:200px;
-  border-radius:8px 0 0 8px;border-right:0}
-/* hand-drawn sketch overlay (Rough.js): every wf primitive is redrawn wobbly at runtime —
-   frames/buttons/inputs as rough rects, row/topbar/tab dividers as rough lines, avatars as
-   hachured circles, pills as capsules, change marks as colored rings. The crisp CSS borders
-   below are the no-JS fallback; the script swaps each one to transparent (wf-roughed /
-   wf-roughed-b) only after its sketch has drawn. */
-.wf-screen,.wf-btn,.wf-input,.wf-pill,.wf-avatar,.wf-topbar,.wf-row,.wf-tabs,.wf-tab,
-.wf-added,.wf-removed{position:relative;isolation:isolate}
-.wf-rough-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible}
-.wf-added > .wf-rough-layer,.wf-removed > .wf-rough-layer{z-index:1;width:auto;height:auto}
-.wf-roughed{border-color:transparent}
-.wf-roughed-b{border-bottom-color:transparent}
-.wf-btn.primary.wf-roughed-fill{background:transparent}
-.wf-avatar.wf-roughed{background:transparent}
-.wf-screen.wf-roughed[data-surface="browser"]::before{background:none;border-bottom-color:transparent}
-/* primitives */
-.wf-topbar{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)}
-.wf-title{font-weight:600}
-.wf-spacer{flex:1}
-.wf-btn{border:1px solid var(--rule);border-radius:6px;padding:2px 10px;background:transparent;
-  color:var(--fg);font:inherit;font-size:12px}
-.wf-btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.wf-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
-.wf-row:last-child{border-bottom:0}
-.wf-input{display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:4px 8px;color:var(--muted)}
-.wf-pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:11px;color:var(--muted)}
-.wf-avatar{width:18px;height:18px;border-radius:50%;background:var(--rule);flex:none}
-.wf-bar{display:inline-block;height:8px;border-radius:4px;background:var(--chip);vertical-align:middle}
-.wf-muted{color:var(--muted)}
-.wf-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:8px}
-.wf-tab{padding:3px 10px;font-size:12px;color:var(--muted)}
-.wf-tab.on{color:var(--fg);border-bottom:2px solid var(--fg)}
-/* change marks: what THIS diff added/removed inside the sketch */
-.wf-added{outline:1.5px solid var(--add-b);outline-offset:2px;border-radius:6px}
-.wf-removed{outline:1.5px dashed var(--del-b);outline-offset:2px;border-radius:6px;opacity:.75}
-.wf-added.wf-roughed-mark,.wf-removed.wf-roughed-mark{outline:none}
 .mermaid{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;
   text-align:center;margin:10px 0}
 code.inline{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:var(--mono)}

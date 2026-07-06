@@ -27,7 +27,7 @@ for m in re.finditer(r'<script(\s[^>]*)?>', html, re.I):
     sys.exit(1)
 PY
 
-for f in recap-chrome.css recap-runtime.js highlight-theme.css highlight.min.js mermaid.min.js rough.min.js Excalifont-Regular.woff2; do
+for f in recap-chrome.css recap-runtime.js highlight-theme.css highlight.min.js mermaid.min.js; do
   [[ -f "$VENDOR/$f" ]] || fail "missing vendor file: $VENDOR/$f"
 done
 

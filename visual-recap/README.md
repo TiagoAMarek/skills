@@ -12,10 +12,9 @@ away.
 
 - A **TL;DR verdict** — one line on what changed, 2–3 things worth checking
   first, and mechanical facts (files, +/−, test coverage, risk).
-- **Wireframes** for any UI change — Before/After sketches of the actual
-  surface (popover, dialog, panel, phone, browser), not just a code diff.
-  Rendered hand-drawn: Rough.js sketch borders + the Excalifont handwriting
-  font (both vendored), so a sketch never reads as a screenshot.
+- **UI surface bullets + annotated code** for component changes — inventory of
+  what the user sees (popover, dialog, panel), then the resulting component
+  with `was:` notes on replaced labels.
 - **Split diffs** with syntax highlighting, word-level emphasis, and a
   Unified/Split toggle, plus line-anchored notes on the hunks that matter.
 - **Data model** and **API endpoint** blocks for schema/contract changes, with
@@ -43,9 +42,9 @@ Everything runs locally and offline:
 1. Reads the diff with `git diff` / `git status` — no network calls.
 2. Copies `reference/template.html` into `recaps/<date>-<slug>.html` in your
    project and slot-fills the marked regions.
-3. The recap references two vendored libraries (`vendor/highlight.min.js`,
-   `vendor/mermaid.min.js`) by absolute path, so it never fetches anything at
-   runtime and works from any project.
+3. The recap references vendored assets (`highlight.min.js`, `mermaid.min.js`,
+   `recap-chrome.css`, `recap-runtime.js`) by absolute path, so it never
+   fetches anything at runtime and works from any project.
 4. You get back an absolute file path — open it with `open <path>` or a
    double-click.
 
@@ -58,6 +57,6 @@ disposable per-project artifacts; `recaps/` is safe to `.gitignore`.
 |---|---|
 | `SKILL.md` | The instructions the agent follows to author a recap |
 | `reference/template.html` | The markup contract — every block type as a copyable example |
-| `vendor/` | Vendored `highlight.js` and `mermaid.js`, referenced by absolute path |
+| `vendor/` | Vendored highlight.js, mermaid.js, and recap chrome/runtime |
 
 See `SKILL.md` for the full authoring workflow and grounding rules.

@@ -9,15 +9,13 @@ Produce a single local HTML file that makes a change set reviewable at a glance:
 
 ## What this is NOT
 - No shareable/hosted links, no localhost server/bridge — never publish, never fetch (while authoring or at runtime).
-- No MDX, no React, no build step. Output is plain HTML that references two **vendored** libs by absolute `file://` path.
+- No MDX, no React, no build step. Output is plain HTML that references vendored assets by absolute `file://` path.
 
 ## Vendored runtime (already on disk)
 - `vendor/highlight.min.js` + `vendor/highlight-theme.css` — syntax highlighting
 - `vendor/mermaid.min.js` — diagrams
-- `vendor/rough.min.js` — wireframe hand-drawn overlay
-- `vendor/recap-chrome.css` — page + wireframe styles (`.wf-*` kit lives here; **never inline in recaps**)
-- `vendor/recap-runtime.js` — diff renderer, wireframe sketch, tabs, bionic toggle (**never inline in recaps**)
-- `vendor/Excalifont-Regular.woff2` — wireframe handwriting font (linked from recap-chrome.css)
+- `vendor/recap-chrome.css` — page styles (**.never inline in recaps**)
+- `vendor/recap-runtime.js` — diff renderer, tabs, bionic toggle (**never inline in recaps**)
 The template references these by absolute `file://` path.
 
 ## Workflow
@@ -42,15 +40,15 @@ Read the actual hunks. Done means every changed file is accounted for. Identify:
 - **Key changes** → become 3–8 tabs. Group by feature/subsystem, not by file; every changed file is claimed by a tab (a residual "everything else" tab is fine).
 - **Data shape changes** → a `data-model` block with change badges for every schema/type/model change in the diff; modified fields carry `was:` the prior value.
 - **API/route changes** → an `api-endpoint` block (method, path, request/response) for every route change in the diff.
-- **UI changes** → wireframes (see 3c). First inventory the changed surfaces from the diff: entry surface, opened interaction surface (popover/dialog/panel), resulting state (incl. empty/error), role variants when permissions change. Done means each is drawn or consciously skipped as trivial.
+- **UI changes** → surface inventory (see 3c). Inventory the changed surfaces from the diff: entry surface, opened interaction surface (popover/dialog/panel), resulting state (incl. empty/error), role variants when permissions change. Done means each is listed or consciously skipped as trivial.
 - **The overall shape** → one Mermaid `Change map` diagram in the overview (only if it clarifies).
 
 ### 3. Author the recap
 1. Copy `reference/template.html` verbatim to `recaps/<YYYY-MM-DD>-<slug>.html` in the current project (create `recaps/` if missing; `<slug>` = short kebab summary; date = today).
-2. **Resolve the vendor path before touching anything else.** Skill folders are sometimes a real directory under `.claude/skills/`, sometimes a symlink to `.agents/skills/`. Run `realpath` (or equivalent) on this skill's own directory to get the true on-disk path, then rewrite **every** vendored `file://` path in the copied file — two `<link>` tags (`highlight-theme.css`, `recap-chrome.css`) and four `<script>` tags (`highlight.min.js`, `mermaid.min.js`, `rough.min.js`, `recap-runtime.js`) — if the resolved path differs. Do this once per machine/project; don't assume the path baked into the template is still correct.
-3. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the vendored `<link>` / `<script src>` tags. **Never add inline `<style>` or inline runtime `<script>`** — chrome and wireframe logic must stay in `vendor/recap-chrome.css` and `vendor/recap-runtime.js` so recaps cannot drift.
-4. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `wireframe` (surfaces + Before/After compare), `mermaid` diagram, `file-tree` (change badges), `diff` (`script.vr-diff`, collapsible, split/unified), `vr-notes` (line-anchored diff callouts), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
-5. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<script type="text/plain" class="vr-diff" data-lang="<lang>">…</script>`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Use `script` (not `pre`) so JSX/HTML tags in the hunk cannot break the page DOM. Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, word-level emphasis, and a side-by-side split view (the default; set `data-mode="unified"` on a genuinely narrow hunk — the reader gets a toggle either way). Keep the `@@ … @@` header — the line numbers come from it. On key files, anchor 2–4 `vr-notes` callouts to the lines that matter. Keep each tab's diff under ~150 lines; summarize the rest instead of dumping the file. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
+2. **Resolve the vendor path before touching anything else.** Skill folders are sometimes a real directory under `.claude/skills/`, sometimes a symlink to `.agents/skills/`. Run `realpath` (or equivalent) on this skill's own directory to get the true on-disk path, then rewrite **every** vendored `file://` path in the copied file — two `<link>` tags (`highlight-theme.css`, `recap-chrome.css`) and three `<script>` tags (`highlight.min.js`, `mermaid.min.js`, `recap-runtime.js`) — if the resolved path differs. Do this once per machine/project; don't assume the path baked into the template is still correct.
+3. Slot-fill only the marked regions: `<title>`, the header (eyebrow / title / case-line), the `.tldr` verdict stamp, `.overview`, file-tree, the `nav.tabs` buttons, and the `.tab-panel` sections. **Never touch** the vendored `<link>` / `<script src>` tags. **Never add inline `<style>` or inline runtime `<script>`** — chrome and runtime logic must stay in `vendor/recap-chrome.css` and `vendor/recap-runtime.js` so recaps cannot drift.
+4. Use the block examples in the template as the exact markup contract — duplicate the ones you need, delete the rest. Blocks available: `rich-text` prose, `mermaid` diagram, `file-tree` (change badges), `diff` (`script.vr-diff`, collapsible, split/unified), `vr-notes` (line-anchored diff callouts), `annotated-code` (`language-<lang>` + `.note`), `data-model` table, `api-endpoint`.
+5. **Diffs**: paste the RAW unified git hunk (including the `@@ … @@` header) as plain text into `<script type="text/plain" class="vr-diff" data-lang="<lang>">…</script>`, with `data-lang` set from the file extension (e.g. `typescript`, `python`, `go`, `json`). Use `script` (not `pre`) so JSX/HTML tags in the hunk cannot break the page DOM. Do NOT hand-author highlighting or line markup. A runtime renderer adds line-number gutters, per-line syntax colors, word-level emphasis, and a side-by-side split view (the default; set `data-mode="unified"` on a genuinely narrow hunk — the reader gets a toggle either way). Keep the `@@ … @@` header — the line numbers come from it. On key files, anchor 2–4 `vr-notes` callouts to the lines that matter; use `was:` in the note text when a label was replaced. Keep each tab's diff under ~150 lines; summarize the rest instead of dumping the file. New-file walkthroughs still use `<code class="language-<lang>">` (annotated-code).
 
 ### 3a. The TL;DR banner
 A 3-second scannable verdict at the very top, for "trust or dig in?". It is NOT a shorter Overview — it is a different shape. Fill it so:
@@ -82,33 +80,29 @@ The exact markup for all of this (`prose` class placement, `.sum`, `open`, `<b>`
 Before: "This pivotal change establishes a robust foundation, serving as the entry point for a more streamlined auth flow."
 After: "Replaces password login with token sessions. Old path deleted."
 
-### 3c. Wireframes (UI changes)
-If the diff changes rendered UI — components, styles, tokens, copy, navigation — the tab that owns it MUST open with wireframe(s); code diffs don't show what the user sees. Draw the surfaces from the step-2 inventory: a Before/After pair when comparison clarifies, after-only when the change is purely additive, a state sequence when the change is a flow. Use the smallest surface that shows it (a popover change gets a popover, not a whole page). Markup contract, surface presets, and change marks are in the template.
+### 3c. UI surfaces (UI changes)
+If the diff changes rendered UI — components, styles, tokens, copy, navigation — the tab that owns it opens with the surface inventory and annotated-code; code diffs alone don't show what the user sees.
 
-A wireframe is a **sketch, not a screenshot**, and is half-mechanical: every label, control, and state drawn must be a string or component visible in the diff — never invent UI. Layout and sizing are inference; the caption discloses that automatically. Trivial visual changes (a typo, a comment) need none. The template's vendored Rough.js + Excalifont render the whole `.wf-*` kit hand-drawn automatically — sketched frames, controls, dividers, and a handwriting font inside screens — just author the markup, nothing extra to wire up.
+Render the step-2 inventory as **2–4 bullets** under a `UI surfaces` heading (or woven into the tab intro): name each surface, call out removed strings/controls, call out added strings/controls. Trivial visual changes (a typo, a comment) need no inventory.
 
-**Change marks (`.wf-added` / `.wf-removed`):**
-- **Structural rows** (whole landmark moved/added): put the class on the `.wf-row` (page chrome, submenu state rows).
-- **Label inside a row** (only part of the row changed): put the class on an inner `<span>`, not the row (nav landmark labels).
-- **Consecutive row marks**: same-polarity `.wf-row` marks that stack without an unmarked row between them auto-merge into one sketch ring at runtime — keep marking every structural row; do not drop marks to avoid overlap.
-- **Browser surfaces** (`data-surface="browser"`): Before/After auto-stack vertically; do not force side-by-side.
+Follow with **annotated-code** on the resulting component: every label, control, and state shown must be a string or symbol visible in the diff — never invent UI. Use a `.note` above the block for context; put `<span class="was">was: …</span>` on replaced labels (same pattern as `data-model`). On the diff below, anchor `vr-notes` to the lines that matter; use `was:` in the note when a label was replaced.
+
+**Before/After without a second block:** tab-intro bullets carry the string-level delta. Add a second annotated-code block only when the diff deletes one component file and adds a separate replacement file.
 
 ### 3d. Verify before delivery (hard gate)
-If the recap contains any wireframe markup (`.wf-fig`, `.wf-screen`, `.wf-added`, `.wf-removed`), you **must** run the drift checker and it **must** pass before you report the file path:
+You **must** run the drift checker and it **must** pass before you report the file path:
 ```
 <skill-dir>/scripts/verify-recap.sh recaps/<YYYY-MM-DD>-<slug>.html
 ```
 Only report the recap when the output is `verify-recap: OK`. If it fails, fix the recap (usually: remove inline `<style>` / runtime `<script>`, restore vendor links) and re-run until green.
 
-Skip verify only when the recap has **no** UI wireframes at all.
-
 ### 4. Grounding rules (hard)
-- **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots. (Wireframes split down the middle — see 3c.)
+- **Mechanical vs judgment**: every structured block must derive mechanically from the real diff — if the diff doesn't contain a fact, omit the block; do not invent fields, endpoints, or params. Judgment (inferences, intent, risk) lives only in prose: `.overview`, tab intros, and the TL;DR Check/Risk slots. Annotated-code strings and surface-inventory bullets must still come from the diff.
 - **Exhaustive**: everything the step-2 read identified lands in the recap — files in the tree and tabs, schema/type and route changes in blocks. A single block + one sentence under-serves the review.
 - **Redaction is the one sanctioned edit to a pasted hunk.** If a hunk (or any block, note, or example) carries a secret — key, token, password, webhook URL, `.env` value — replace the value alone with `•••redacted•••`, keeping the line and key name intact so the diff still reads. A recap file outlives "local-only": it gets copied, screen-shared, pasted.
 
 ### 5. Report
-1. If wireframes are present, run `scripts/verify-recap.sh` and confirm `verify-recap: OK`.
+1. Run `scripts/verify-recap.sh` and confirm `verify-recap: OK`.
 2. Print the **absolute local file path** and tell the user to open it (double-click / `open <path>`). Do not produce a URL. Do not summarize the diff in chat — the recap is the deliverable.
 
 ## Notes

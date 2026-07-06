@@ -2,7 +2,7 @@
   visual-recap TEMPLATE — copy this whole file to recaps/<YYYY-MM-DD>-<slug>.html and slot-fill.
   Rules:
     - Vendored chrome + runtime are referenced by ABSOLUTE file:// path (the two <link> tags below,
-      plus four <script> tags near the end) so any recap in any project resolves them. Resolve paths
+      plus three <script> tags near the end) so any recap in any project resolves them. Resolve paths
       against this skill's real on-disk path (skill folders can be symlinked between .claude/skills/
       and .agents/skills/) before trusting baked-in paths.
     - Do NOT change anything in the <head> vendor links, or the trailing vendored <script> tags.
@@ -98,41 +98,27 @@ graph LR
     <section class="card">
       <p class="prose">One sentence framing this change. Why it matters for review.</p>
 
-      <!-- WIREFRAME block (UI changes only — see SKILL.md "Wireframes"). Opens the tab that owns the
-           UI change, BEFORE any diff. A sketch, not a screenshot: every label, control, and state you
-           draw must be a string/component visible in the diff; layout is inference — the caption
-           discloses that automatically, just write what the wireframe shows.
-           Surfaces: data-surface="browser" | "phone" | "dialog" | "popover" | "panel" (omit = bare card).
-           Compare pair: .wf-compare > .wf-side[data-label="Before"|"After"]. Narrow surfaces render
-           side by side; browser frames auto-stack. After-only change: drop .wf-compare, keep .wf-fig.
-           Mark what the diff added/removed with .wf-added / .wf-removed on the element.
-           The vendored Rough.js + Excalifont render the whole kit hand-drawn at runtime — frames,
-           buttons, inputs, dividers, pills, avatars, change marks, and the handwriting font inside
-           screens. Just author plain markup; no extra classes/attributes needed for the sketch. -->
-      <h3 class="blk">UI — share popover</h3>
-      <figure class="wf-fig">
-        <div class="wf-compare">
-          <div class="wf-side" data-label="Before">
-            <div class="wf-screen" data-surface="popover">
-              <div class="wf-topbar"><span class="wf-title">Share</span></div>
-              <div class="wf-row"><span class="wf-avatar"></span><span>alice@acme.com</span>
-                <span class="wf-spacer"></span><span class="wf-pill">Owner</span></div>
-              <div class="wf-row wf-removed"><span class="wf-muted">Anyone with the link</span></div>
-            </div>
-          </div>
-          <div class="wf-side" data-label="After">
-            <div class="wf-screen" data-surface="popover">
-              <div class="wf-topbar"><span class="wf-title">Share</span><span class="wf-spacer"></span>
-                <button class="wf-btn primary wf-added">Copy link</button></div>
-              <div class="wf-row"><span class="wf-avatar"></span><span>alice@acme.com</span>
-                <span class="wf-spacer"></span><span class="wf-pill">Owner</span></div>
-              <div class="wf-row wf-added"><span>Org members</span>
-                <span class="wf-spacer"></span><span class="wf-pill">can view</span></div>
-            </div>
-          </div>
-        </div>
-        <figcaption class="wf-caption">Share popover: link sharing replaced by org-scoped access</figcaption>
-      </figure>
+      <!-- UI tab pattern (UI changes only — see SKILL.md "UI surfaces"). Open the tab with surface
+           inventory bullets, then annotated-code on the resulting component, then collapsed diff.
+           Every string/control named must appear in the diff. Trivial copy tweaks need no inventory. -->
+      <h3 class="blk">UI surfaces</h3>
+      <ul class="prose">
+        <li><b>Share popover</b>: entry surface</li>
+        <li>Removed: "Anyone with the link"</li>
+        <li>Added: "Org members · can view", "Copy link" button</li>
+      </ul>
+      <h3 class="blk">Component — SharePopover.tsx</h3>
+      <div class="note">Public link row removed <span class="was">was: Anyone with the link</span>. Org-scoped access row added.</div>
+<pre><code class="language-tsx">export function SharePopover() {
+  return (
+    &lt;Popover title="Share"&gt;
+      &lt;Row user="alice@acme.com" role="Owner" /&gt;
+      &lt;Row label="Org members" access="can view" /&gt;
+      &lt;Button variant="primary"&gt;Copy link&lt;/Button&gt;
+    &lt;/Popover&gt;
+  )
+}
+</code></pre>
 
       <!-- DIFF block: paste the RAW unified git hunk into script.vr-diff (type=text/plain), set data-lang
            from the file ext. script blocks keep JSX/HTML in hunks from breaking the page DOM.
@@ -216,5 +202,4 @@ graph LR
 <!-- ============ VENDORED RUNTIME — do not edit paths ============ -->
 <script src="file:///Users/tiagomarek/.agents/skills/visual-recap/vendor/highlight.min.js"></script>
 <script src="file:///Users/tiagomarek/.agents/skills/visual-recap/vendor/mermaid.min.js"></script>
-<script src="file:///Users/tiagomarek/.agents/skills/visual-recap/vendor/rough.min.js"></script>
 <script src="file:///Users/tiagomarek/.agents/skills/visual-recap/vendor/recap-runtime.js"></script>
